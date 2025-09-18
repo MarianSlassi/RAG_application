@@ -1,11 +1,14 @@
 from pathlib import Path
 
 class Config:
-
+    """
+    Customized basic Config as a class to store path to key files and data in the project
+    """
     def __init__(self, base_dir: Path = None, models_dir: Path=None, **custom_paths):
-        self.base_dir = base_dir or Path(__file__).resolve().parents[1] / 'data' # store all data in dedicated folder ⚠️
-        print(f'Config initialized with \n base_dir: {self.base_dir} \n models_dir:{self.models_dir} ')
+        self.base_dir = base_dir or Path(__file__).resolve().parents[2] / 'data' # store all data in dedicated folder ⚠️
+        print(f'Config initialized with \n base_dir: {self.base_dir}')
         '''
+        Supposed config will be stored at src/helpers/config.py
         Rules of devine config:
         1. Don't change variables names, only path.
         2. If you change path, it's up to you, but remember it's never late to turn back
@@ -20,6 +23,10 @@ class Config:
             logs_dir=Path("/tmp/logs")
         )
         config.get('')
+
+        In this case you will have all dirs stored at base dir, except of those you redifined to other folders
+
+        When you move config to new project and don't use custom paths, just change default value for base dir. 
 
 
         All commented lines means some config path aren't used in project currently, but might be used in the future. All uncommented paths are used.
@@ -53,7 +60,8 @@ class Config:
             'cleaned_dir':                cleaned_dir,
 
             # Raw _01
-            'raw_dir':                      raw_dir,
+            'raw_dir':                    raw_dir,
+            'canonical_dir':              raw_dir / 'it-knowledge' / 'canonical'
         }
 
     def get(self, key : str) -> Path:
