@@ -96,7 +96,7 @@ class DocumentLoader():
     def _parse_file(self, file) -> Document:
         """
         Invokes self._extract_text() to get plain text from file, also extracts metadata (see "Returns")\n
-        Assigns header of document by its first line. And updated_at when line starts with "updated"
+        Assigns 'tile' of document by name of the file. And updated_at when line starts with "updated" or fallback to the system metainformation
         Args:
             file(str):
                 path to file from which we will extract text and metadata
@@ -118,24 +118,21 @@ class DocumentLoader():
         updated_at = None
 
         for line in file_content.splitlines():
-            if title is None and line.strip():
-                if line.startswith("#"):
-                    title = line.replace("#", "").strip()
-                else:
-                    title = line.strip()
 
             if updated_at is None and line.lower().startswith("updated:"):
                 date_str = line.split(":", 1)[1].strip()
                 updated_at = datetime.strptime(date_str, "%Y-%m-%d")
-
-            if title and updated_at:
                 break
-        if not title:
+
+        if title is None:
             title = os.path.basename(file)
+
+        if updated_at is None:
+            updated_at = datetime.fromtimestamp(os.path.getmtime(file)).date()
 
         return Document(title=title, path=file, filetype=ext, updated_at=updated_at, text=file_content)
     
-    def _load_files(self, files: list[str] = None) -> list[Document]:
+    def load_files(self, files: list[str] = None) -> list[Document]:
         """
         Uses _parse_file() to construct list[Document]\n
         Args:

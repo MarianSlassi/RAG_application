@@ -20,7 +20,7 @@ config = Config()
 document_loader = DocumentLoader(config=config)
 files = document_loader.find_files()
 
-document_loader._load_files(files = files)
+files_list = document_loader._load_files(files = files)
 ```
 List of methods (private and public):
 ```
@@ -41,8 +41,8 @@ _extract_text(file: str) -> str
 _parse_file(file: str) -> Document
     Uses `_extract_text()` to get the file’s full text, then
     derives metadata:
-      • `title` – first non-empty line (prefers a Markdown heading `#`).
-      • `updated_at` – first line starting with `updated:`.
+      • `title` – files' name.
+      • `updated_at` – first line starting with `updated:` or fallback to files' metaingormation.
     Returns a `Document` Pydantic object.
 
 _load_files(files: list[str] | None = None) -> list[Document]
