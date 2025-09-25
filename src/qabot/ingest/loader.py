@@ -7,16 +7,12 @@ from docx import Document as DocxDocument
 from src.schemas import Document
 from src.helpers import Config
 
-'''
-1. If the DocumentLoader object initialized without passing path it will initialize config 
-'''
+
 class DocumentLoader():
     """
-    Class for loading text from files/documents and transform them into list of dicts with files text and metadata.\n
-
-    Used to transform files/documents into list[dict] with the format of a Document: \n
+    Class used to transform files/documents list into list[dict] with the format of a Document: \n
     {\n
-    "title": "equipment",\n
+    "title": "092_setting-up-a-secure-connection-to-a-company-issued-website",\n
     "path": "data/tinyco/equipment.md",\n
     "filetype": "md",\n
     "updated_at": "2025-08-25",\n
@@ -68,7 +64,7 @@ class DocumentLoader():
     
     def _extract_text(self, file):
         """
-        Extracting text from file\n
+        Extracting text from file with given path to file\n
         Allowed extensions: from .md, .pdf, .docx files\n
         Yet only fixed type of formats\n
         Uses PyPDF2 and python-docx.
@@ -95,8 +91,9 @@ class DocumentLoader():
         
     def _parse_file(self, file) -> Document:
         """
+        Takes file path and produce Document with metadata\n
         Invokes self._extract_text() to get plain text from file, also extracts metadata (see "Returns")\n
-        Assigns 'tile' of document by name of the file. And updated_at when line starts with "updated" or fallback to the system metainformation
+        Assigns 'title' of document by name of the file. And updated_at when line starts with "updated" or fallback to the system metainformation
         Args:
             file(str):
                 path to file from which we will extract text and metadata
@@ -125,7 +122,7 @@ class DocumentLoader():
                 break
 
         if title is None:
-            title = os.path.basename(file)
+            title = os.path.splitext(os.path.basename(file))[0]
 
         if updated_at is None:
             updated_at = datetime.fromtimestamp(os.path.getmtime(file)).date()
@@ -134,10 +131,12 @@ class DocumentLoader():
     
     def load_files(self, files: list[str] = None) -> list[Document]:
         """
-        Uses _parse_file() to construct list[Document]\n
+        Uses _parse_file(file_path) method to assembley object of list[Document]\n
         Args:
             files(list[str]):
-                Assembling parsed files into list
+                paths to files
+        Returns:
+            list[Document]
         """
         if not files:
             files = self.find_files()
