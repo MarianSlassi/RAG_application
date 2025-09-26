@@ -3,4 +3,4 @@ data/
 *.DS_Store
 *.test
 __pycache__/
-test.ipynb
+*test*

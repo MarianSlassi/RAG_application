@@ -32,6 +32,11 @@ find_files(path: str | None = None,
     given) and returns absolute paths of all files whose extensions match
     `allowed_ext`.
 
+load_files(files: list[str] | None = None) -> list[Document]
+    High-level loader. For each path in *files* (or from `find_files()` if
+    none provided), calls `_parse_file()` and assembles a list of Document
+    instances.
+
 Private methods
 ---------------
 _extract_text(file: str) -> str
@@ -45,29 +50,25 @@ _parse_file(file: str) -> Document
       • `updated_at` – first line starting with `updated:` or fallback to files' metaingormation.
     Returns a `Document` Pydantic object.
 
-_load_files(files: list[str] | None = None) -> list[Document]
-    High-level loader. For each path in *files* (or from `find_files()` if
-    none provided), calls `_parse_file()` and assembles a list of Document
-    instances.
 
 ```
 
 ASCII Overview:
 ```
-          ┌────────────┐
+          ┌───────────┐
           │find_files │─────┐   (get list of file paths)
           └─────┬─────┘     │
                 ▼           │
-          ┌────────────┐    │
-          │_load_files │◄───┘   (entry point to build list[Document])
+          ┌───────────┐     │
+          │_load_files│◄────┘   (entry point to build list[Document])
           └─────┬─────┘
                 ▼
-          ┌────────────┐
-          │_parse_file │   (extract metadata + text for one file)
+          ┌───────────┐
+          │_parse_file│   (extract metadata + text for one file)
           └─────┬─────┘
                 ▼
-          ┌────────────┐
+          ┌─────────────┐
           │_extract_text│   (low-level text extraction)
-          └────────────┘
+          └─────────────┘
 ```
 ## Config()
