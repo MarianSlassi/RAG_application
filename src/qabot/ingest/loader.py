@@ -19,14 +19,14 @@ class DocumentLoader():
     "text": "…full plain text…"\n
     }\n
     """
-    def __init__(self, config = Config ):
+    def __init__(self, config: Config | None ):
         """
         Pass config instance when initializing to have manageable source data location paths
         Args:
             config(Config):
                 Custom object to store configs
         """
-        self.config = config
+        self.config = config or Config()
 
     
     def find_files(self, path: str | None = None , allowed_ext: tuple = ('.md', '.pdf', '.docx')) -> list[str]:
@@ -39,6 +39,8 @@ class DocumentLoader():
                 Tuple of strings with extensions to search, by default: ('.md', '.pdf', '.docx')
         Returns:
             list[str] : list of absolute paths to all files of a type
+        Note:
+            You can use allowed_ext argument to find path to any types of files, but files parsing methods of this class bounded to default values, keep in mind it in case of need further processing of found files with nondefault extensions
         """
         
 
@@ -134,7 +136,7 @@ class DocumentLoader():
         Uses _parse_file(file_path) method to assembley object of list[Document]\n
         Args:
             files(list[str]):
-                paths to files
+                paths to files,if not provided by default calls self.find_files() with canonical dir
         Returns:
             list[Document]
         """

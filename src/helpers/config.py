@@ -2,10 +2,21 @@ from pathlib import Path
 
 class Config:
     """
-    Customized basic Config as a class to store path to key files and data in the project
+    Customized basic Config as a class to store paths to key files and data in the project. The idea is simple: most data projects
+    need a dedicated data/ folder for datasets, processed files, models and so on. To prevent code from breaking when paths change,
+    we wrap all important locations in this object.
+
+    You can manage folders under data/ by passing custom paths at object creation. If you want to add new folders beyond the default
+    01–07 structure, simply add them to self._config. For any folder that should be overridable at creation time, use the helper
+    function override_or_default inside __init__: it checks if a custom path was provided, otherwise uses the default, and always
+    creates the directory if missing. This avoids repeating the same “check or create” logic for every folder.
+
+    In short, Config centralizes and safeguards all project paths, while override_or_default makes it easy to override defaults
+    and guarantees the corresponding directories exist.
     """
-    def __init__(self, base_dir: Path = None, models_dir: Path=None, **custom_paths):
+    def __init__(self, base_dir: Path = None, indexer_dir: Path=None, **custom_paths):
         self.base_dir = base_dir or Path(__file__).resolve().parents[2] / 'data' # store all data in dedicated folder ⚠️
+        self.indexer_dir = base_dir or Path(__file__).resolve().parents[2] / '.index' # store all data in dedicated folder ⚠️
         print(f'Config initialized with \n base_dir: {self.base_dir}')
         '''
         Supposed config will be stored at src/helpers/config.py
@@ -22,7 +33,7 @@ class Config:
             raw_dir=Path("/mnt/drive/datasets/raw"),
             logs_dir=Path("/tmp/logs")
         )
-        config.get('')
+        config.get('cleaned_dir')
 
         In this case you will have all dirs stored at base dir, except of those you redifined to other folders
 
@@ -46,12 +57,15 @@ class Config:
         validated_dir = override_or_default('validated_dir', self.base_dir / '03_validated')
         cleaned_dir   = override_or_default('cleaned_dir', self.base_dir / '02_cleaned')
         raw_dir       = override_or_default('raw_dir', self.base_dir / '01_raw')
+        indexer_dir   = override_or_default('indexer_dir', self.indexer_dir)
         
         self._config = {
-            # Logs
-            'logs_dir': logs_dir, 
-            # Models
-            'models_dir':                 models_dir,
+            # Logs_07
+            'logs_dir':                   logs_dir, 
+            # Indexer
+            'indexer_dir':                indexer_dir,
+            'index_file':                 indexer_dir / 'index.faiss',
+            'chunks_file':                indexer_dir / 'chunks.pkl',
 
             # Validated_3
             'validated_dir':              validated_dir,

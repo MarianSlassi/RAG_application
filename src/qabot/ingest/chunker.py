@@ -110,7 +110,7 @@ class Chunker:
                 new_text.append(sequence)
             return new_text
 
-    def _merge_short_text(self, sequences : list[str]) -> list[str]:
+    def _merge_short_text(self, sequences : list[str], min_tokens: int = 150) -> list[str]:
         """
         Merges consecutive short text fragments into larger chunks without exceeding the context window.
 
@@ -122,18 +122,17 @@ class Chunker:
         TODO: In rare cases a fragment may remain shorter than 150 tokens if neither merging forward
         nor backward is possible without exceeding the maximum context length. Such short fragments
         are currently left as-is.
-        NICE TO DO: we have min-tokens hardcoded as 150, there no need yet for any possibility to change this value
         """
         current_chunk = ''
         new_sequence = []
         for num, text in enumerate(sequences):
-            if self._count_tokens(text) < 150: # Found small string
+            if self._count_tokens(text) < min_tokens: # Found small string
                 if self._count_tokens(current_chunk + text) <= self.context_window : # Could we add it to buffer?
                     current_chunk = current_chunk + '\n' + text
                     continue
                 else: # If next str is long, we should save existing buffer to final sequence, if buffer exist
                     if current_chunk:
-                        if self._count_tokens(current_chunk) < 150 and new_sequence: # What if sequence in buffer too short?
+                        if self._count_tokens(current_chunk) < min_tokens and new_sequence: # What if sequence in buffer too short?
                             prev = new_sequence[-1] + current_chunk 
                             if self._count_tokens(prev) <= self.context_window: # We can add buffer to previous string in parrent list
                                 new_sequence[-1] = prev
@@ -150,7 +149,7 @@ class Chunker:
             return new_sequence
         return new_sequence
     
-    def _process_split_text(self, sequence: list[str], min_tokens = 150)->list[str]:
+    def _process_split_text(self, sequence: list[str], min_tokens: int = 150)->list[str]:
         """
         Processes a list of text fragments by first cutting overly long segments
         and then merging too short ones to produce balanced chunks.
@@ -180,18 +179,22 @@ class Chunker:
         for each in sequence:
             temp = self._cut_long_text(each)
             new_sequence.extend(temp)
-        new_sequence = self._merge_short_text(new_sequence)
+        new_sequence = self._merge_short_text(sequences = new_sequence, min_tokens = min_tokens)
         return new_sequence
     
-    def documents_to_chunks(self, documents: list[Document]) -> list[Chunk]:
+    def documents_to_chunks(self, documents: list[Document], min_tokens:int = 150) -> list[Chunk]:
         """
         Takes list of Documents objects and iterate among them. For each\
         saves title and path fields. Then call self._split_text() method to split\
         text and get chunks strings list. For each chunk text counts section_id and number of tokens inside.\
         Then assign document_title, path, section_id, tokens number and section title (mocked) to Meta schem,\
         and transfer it with 'id' and text of chunk string to Chunk shem object. 
-              
+
+        Notes:
+            'section_title' field mocked with '' for future expansion. 
         """
+        if min_tokens >= self.context_window:
+            raise ValueError(f'min_tokens argument should be not grater or equal to the context window of tokenizer, current context_window: {self.context_window}')
         chunks_array = []
         for doc in documents:
             document_title, path = None, None
@@ -199,7 +202,7 @@ class Chunker:
             path = doc.path
 
             splitted_document_text = self._split_text(document= doc)
-            splitted_document_text = self._process_split_text(splitted_document_text)
+            splitted_document_text = self._process_split_text(splitted_document_text, min_tokens=min_tokens)
 
             for section_id , chunk in enumerate(splitted_document_text):     
                 id = document_title + '_' +  str(section_id)
