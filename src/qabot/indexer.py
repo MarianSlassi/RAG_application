@@ -1,11 +1,10 @@
-# src/qabot/indexer.py
 from pathlib import Path
 import pickle
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
 
-from src.helpers import Config
+from src import Config
 
 class Indexer():
     """Builds and queries a FAISS index over text chunks encoded with SentenceTransformer embeddings."""

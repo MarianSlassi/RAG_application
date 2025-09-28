@@ -10,7 +10,8 @@ from src.helpers import Config
 
 class DocumentLoader():
     """
-    Class used to transform files/documents list into list[dict] with the format of a Document: \n
+    Class used to transform paths to documents list into list[Document] object\n
+    Document format is a: \n
     {\n
     "title": "092_setting-up-a-secure-connection-to-a-company-issued-website",\n
     "path": "data/tinyco/equipment.md",\n
@@ -24,7 +25,7 @@ class DocumentLoader():
         Pass config instance when initializing to have manageable source data location paths
         Args:
             config(Config):
-                Custom object to store configs
+                Custom object to store configs, used to fallback to 'canonical_dir' when searching for files
         """
         self.config = config or Config()
 
@@ -64,7 +65,7 @@ class DocumentLoader():
 
         return files
     
-    def _extract_text(self, file):
+    def _extract_text(self, file:str):
         """
         Extracting text from file with given path to file\n
         Allowed extensions: from .md, .pdf, .docx files\n
@@ -91,7 +92,7 @@ class DocumentLoader():
             with open(file, "r", encoding="utf-8") as f:
                 return f.read()
         
-    def _parse_file(self, file) -> Document:
+    def _parse_file(self, file:str) -> Document:
         """
         Takes file path and produce Document with metadata\n
         Invokes self._extract_text() to get plain text from file, also extracts metadata (see "Returns")\n
