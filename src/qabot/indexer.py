@@ -2,6 +2,7 @@ from pathlib import Path
 import pickle
 import numpy as np
 import faiss
+from src import Chunk
 from sentence_transformers import SentenceTransformer
 
 from src import Config
@@ -22,15 +23,16 @@ class Indexer():
         self._chunks = None
         self._model = None
 
-    def build_index(self, chunks: list[str]) -> None:
+    def build_index(self, chunks: list[Chunk]) -> None:
         """
         Encodes the provided text chunks using the SentenceTransformer model, builds a FAISS index from the embeddings,
         writes both the index and the chunks to disk at paths specified in the config, and caches them in memory for future queries.
         Args:
             chunks: list[str] - text chunks from which to build index
         """
+        chunks_text = [chunk.text for chunk in chunks]
         model = SentenceTransformer(self.model_name)
-        embeddings = model.encode(chunks, convert_to_numpy=True, normalize_embeddings=True)
+        embeddings = model.encode(chunks_text, convert_to_numpy=True, normalize_embeddings=True)
         dim = embeddings.shape[1]
 
         index = faiss.IndexFlatIP(dim)   
@@ -38,7 +40,7 @@ class Indexer():
 
         faiss.write_index(index, str(self.config['index_file']))
         with open(self.config['chunks_file'], "wb") as f:
-            pickle.dump(chunks, f)
+            pickle.dump(chunks_text, f)
         self._index = index
         self._chunks = chunks
         self._model = model
@@ -60,7 +62,7 @@ class Indexer():
         model = SentenceTransformer(self.model_name)
         return index, chunks, model
 
-    def query(self, text: str, k: int = 3):
+    def query(self, text: str, k: int = 3) ->list[tuple[Chunk, float]]:
         """
         Encodes the input query text using the embedding model, searches the cached or loaded FAISS index for the top k most similar chunks,
         and returns a list of tuples containing (chunk, similarity_score).

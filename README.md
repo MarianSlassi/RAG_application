@@ -8,8 +8,13 @@ Navigate to root/docs to get info about classes used in the project, the short l
 - DocumentLoader()
 - Chunker()
 - Indexer()
+- Retriever()
 # Tests
-Run tests from project root with `python -m pytest tests/test_chunker.py`since src/ and tests/ are neighboring subfolders.
+Since src/ and tests/ are neighboring subfolders, run tests from project root with:
+- `python -m pytest tests/test_loader.py`
+- `python -m pytest tests/test_chunker.py`
+# Schemas
+
 Other possible solution is to use our modul as package, will need additional setup rather than following but :
 [tool.setuptools]
 packages = ["src"]
