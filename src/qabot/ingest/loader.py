@@ -10,7 +10,8 @@ from src.helpers import Config
 
 class DocumentLoader():
     """
-    Class used to transform files/documents list into list[dict] with the format of a Document: \n
+    Class used to transform paths to documents list into list[Document] object\n
+    Document format is a: \n
     {\n
     "title": "092_setting-up-a-secure-connection-to-a-company-issued-website",\n
     "path": "data/tinyco/equipment.md",\n
@@ -19,14 +20,14 @@ class DocumentLoader():
     "text": "…full plain text…"\n
     }\n
     """
-    def __init__(self, config = Config ):
+    def __init__(self, config: Config | None ):
         """
         Pass config instance when initializing to have manageable source data location paths
         Args:
             config(Config):
-                Custom object to store configs
+                Custom object to store configs, used to fallback to 'canonical_dir' when searching for files
         """
-        self.config = config
+        self.config = config or Config()
 
     
     def find_files(self, path: str | None = None , allowed_ext: tuple = ('.md', '.pdf', '.docx')) -> list[str]:
@@ -39,6 +40,8 @@ class DocumentLoader():
                 Tuple of strings with extensions to search, by default: ('.md', '.pdf', '.docx')
         Returns:
             list[str] : list of absolute paths to all files of a type
+        Note:
+            You can use allowed_ext argument to find path to any types of files, but files parsing methods of this class bounded to default values, keep in mind it in case of need further processing of found files with nondefault extensions
         """
         
 
@@ -62,7 +65,7 @@ class DocumentLoader():
 
         return files
     
-    def _extract_text(self, file):
+    def _extract_text(self, file:str):
         """
         Extracting text from file with given path to file\n
         Allowed extensions: from .md, .pdf, .docx files\n
@@ -89,7 +92,7 @@ class DocumentLoader():
             with open(file, "r", encoding="utf-8") as f:
                 return f.read()
         
-    def _parse_file(self, file) -> Document:
+    def _parse_file(self, file:str) -> Document:
         """
         Takes file path and produce Document with metadata\n
         Invokes self._extract_text() to get plain text from file, also extracts metadata (see "Returns")\n
@@ -134,7 +137,7 @@ class DocumentLoader():
         Uses _parse_file(file_path) method to assembley object of list[Document]\n
         Args:
             files(list[str]):
-                paths to files
+                paths to files,if not provided by default calls self.find_files() with canonical dir
         Returns:
             list[Document]
         """

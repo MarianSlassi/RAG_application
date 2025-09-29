@@ -1,6 +1,8 @@
 *.env
 data/
 *.DS_Store
-*.test
 __pycache__/
-*test*
+test.ipynb
+test_md_files/
+.index/
+.venv/
