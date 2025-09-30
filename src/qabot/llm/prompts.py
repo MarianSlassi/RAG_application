@@ -5,10 +5,10 @@ used when querying the LLM.
 
 SYSTEM_PROMPT = """You are a helpful assistant. Follow the rules strictly:
 
+- If evidence is weak or missing, reply exactly with: "I don’t know".
 - Answer **only** based on the provided sources.
 - Keep answers concise (5–7 lines).
-- Always end with a 'Sources:' list. Use 'path' field from sources
-- If evidence is weak or missing, reply exactly with: "I don’t know".
+- Always end with a 'Sources:' list. Use 'path' field from sources. Don't provide sources if you don't know the answer.
 - Add to the end name of foundantation model and provider which gives the answer.
 """
 

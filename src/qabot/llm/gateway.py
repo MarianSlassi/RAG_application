@@ -10,16 +10,19 @@ from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from src.qabot import Retriever, Indexer
 from src import Chunk
 
-
 class Route(StrEnum):
     AWS = "aws"
     OPENROUTES = "openroutes"
+
 
 
 class LLM:
     """
     Gateway to the hosted LLM.
     Wraps the provider API and enforces our prompt structure.
+
+    Note: 
+        this class depends in .env vatiable  "OPENAI_API_KEY"
     """
 
     def __init__(self, model: str | None = None, route: Route = Route.OPENROUTES ):
@@ -59,11 +62,6 @@ class LLM:
             str: Final answer with citations (or "I don’t know").
         """
 
-        # context = [chunk.text for chunk in sources] # Alternative way to provide context for model trhough text, and if needed to show paths separatelly
-        # paths = [chunk.meta.path for chunk in sources]
-        # document_titles = ",\n ".join(f'{i+1} {chunk.meta.document_title}' for i, chunk in enumerate(sources))
-        # print('document_titles',document_titles)
-        # system_prompt = SYSTEM_PROMPT.format(document_titles=document_titles) # We just provide documents titles as ready to use list for model and ask it to use it in responce
         system_prompt = SYSTEM_PROMPT
         context = [
             {"text": chunk.text, "path": chunk.meta.path}
