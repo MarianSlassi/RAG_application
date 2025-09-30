@@ -1,11 +1,19 @@
 import os
 import openai
-from openai import OpenAI  # можно заменить на любой LLM-провайдер
+from openai import OpenAI 
 from dotenv import load_dotenv
+from enum import StrEnum
+import boto3
+
 
 from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from src.qabot import Retriever, Indexer
 from src import Chunk
+
+
+class Route(StrEnum):
+    AWS = "aws"
+    OPENROUTES = "openroutes"
 
 
 class LLM:
@@ -14,17 +22,30 @@ class LLM:
     Wraps the provider API and enforces our prompt structure.
     """
 
-    def __init__(self, model: str | None = None):
-        load_dotenv()
-        # модель берём из аргумента или переменной окружения
+    def __init__(self, model: str | None = None, route: Route = Route.OPENROUTES ):
+        
         self.model = model or os.getenv("LLM_MODEL", "gpt-4o-mini")
         indexer = Indexer()
         index, chunks, model = indexer.load_index()
         self.retriever = Retriever(index, chunks, model)
-        self.client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=os.environ["OPENAI_API_KEY"],
-        )       
+        if route is Route.OPENROUTES:
+            load_dotenv()
+            self.client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=os.environ["OPENAI_API_KEY"],
+            )
+            self.route = route
+        elif route is Route.AWS:
+            # token_aws = os.environ['AWS_BEARER_TOKEN_BEDROCK']
+            self.client = boto3.client(    
+                service_name="bedrock-runtime",
+                region_name="eu-north-1",
+                
+            )
+            self.route = route
+        else:
+            raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
+
 
     def generate(self, question: str, sources: list[Chunk]) -> str | None:
         """
@@ -37,28 +58,55 @@ class LLM:
         Returns:
             str: Final answer with citations (or "I don’t know").
         """
-        # Берём только 2–3 чанка
-        context = [chunk.text for chunk in sources]
-        #context = "\n\n".join(sources[:3]) if sources else "No sources found."
 
+        # context = [chunk.text for chunk in sources] # Alternative way to provide context for model trhough text, and if needed to show paths separatelly
+        # paths = [chunk.meta.path for chunk in sources]
+        # document_titles = ",\n ".join(f'{i+1} {chunk.meta.document_title}' for i, chunk in enumerate(sources))
+        # print('document_titles',document_titles)
+        # system_prompt = SYSTEM_PROMPT.format(document_titles=document_titles) # We just provide documents titles as ready to use list for model and ask it to use it in responce
+        system_prompt = SYSTEM_PROMPT
+        context = [
+            {"text": chunk.text, "path": chunk.meta.path}
+            for chunk in sources
+        ]
+        
         user_prompt = USER_PROMPT_TEMPLATE.format(
             question=question.strip(),
             sources=context,
         )
-
-        document_titles = ",\n ".join(f'{i+1} {chunk.meta.document_title}' for i, chunk in enumerate(sources))
+        if self.route is Route.OPENROUTES:
+            complition = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt },
+                ],
+                max_tokens=500,
+                temperature=0.2,
+            )
+            answer = complition.choices[0].message.content
+        elif self.route is Route.AWS:    
+            
+            model_id = "eu.anthropic.claude-3-7-sonnet-20250219-v1:0"
+            messages = [
+                    {"role": "user", "content": [{'text': user_prompt}]},
+                ]
+            system = [{'text': system_prompt}]
+            # Make the API call
+            response = self.client.converse(
+                modelId=model_id,
+                messages=messages,
+                system = system,
+                inferenceConfig={
+                    "maxTokens": 500,
+                    "temperature": 0.2,
+                    }
+            )
+            
+            # Print the response
+            answer = response['output']['message']['content'][0]['text']
+        else:
+            raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
         
-        system_prompt = SYSTEM_PROMPT.format(document_titles=document_titles)
-        # Вызов API
-        complition = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            max_tokens=500,
-            temperature=0.2,
-        )
-        answer = complition.choices[0].message.content
+
         return  answer
-        # return resp["choices"][0]["message"]["content"].strip()

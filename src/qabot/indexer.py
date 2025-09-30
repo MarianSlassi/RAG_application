@@ -40,7 +40,7 @@ class Indexer():
 
         faiss.write_index(index, str(self.config['index_file']))
         with open(self.config['chunks_file'], "wb") as f:
-            pickle.dump(chunks_text, f)
+            pickle.dump(chunks, f)
         self._index = index
         self._chunks = chunks
         self._model = model
