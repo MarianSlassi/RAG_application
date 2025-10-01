@@ -57,7 +57,7 @@ class LLM:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
 
 
-    def generate(self, question: str, sources: list[Chunk], system_prompt, user_prompt ) -> str | None:
+    def generate(self, system_prompt, user_prompt ) -> str | None:
         """
         Generate an answer using the LLM.
 
