@@ -26,7 +26,7 @@ class Chunker:
 
 
     """
-    def __init__(self, tokenizer = None):
+    def __init__(self, tokenizer = None, max_length = None):
         """
         Initializing chunker instance, pass tokenizer or use "sentence-transformers/all-MiniLM-L6-v2" as fallback\n
         tokenization object used for further strings tokenization and for checking validity of chunks length\n
@@ -35,7 +35,7 @@ class Chunker:
         self.tokenizer = tokenizer or AutoTokenizer.from_pretrained(
             "sentence-transformers/all-MiniLM-L6-v2"
         )
-        self.context_window = self.tokenizer.model_max_length
+        self.context_window = max_length or self.tokenizer.model_max_length
     
     def _count_tokens(self, text: str) -> int:
         """
@@ -182,7 +182,7 @@ class Chunker:
         new_sequence = self._merge_short_text(sequences = new_sequence, min_tokens = min_tokens)
         return new_sequence
     
-    def documents_to_chunks(self, documents: list[Document], min_tokens:int = 150) -> list[Chunk]:
+    def documents_to_chunks(self, documents: list[Document], min_tokens:int = 150, max_tokens = None) -> list[Chunk]:
         """
         Takes list of Documents objects and iterate among them. For each\
         saves title and path fields. Then call self._split_text() method to split\
@@ -193,6 +193,7 @@ class Chunker:
         Notes:
             'section_title' field mocked with '' for future expansion. 
         """
+        self.context_window = max_tokens or self.tokenizer.model_max_length
         if min_tokens >= self.context_window:
             raise ValueError(f'min_tokens argument should be not grater or equal to the context window of tokenizer, current context_window: {self.context_window}')
         chunks_array = []
