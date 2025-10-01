@@ -1204,6 +1204,7 @@ dependencies = [
     { name = "pypdf2" },
     { name = "pytest" },
     { name = "python-docx" },
+    { name = "pyyaml" },
     { name = "sentence-transformers" },
     { name = "transformers" },
 ]
@@ -1224,6 +1225,7 @@ requires-dist = [
     { name = "pypdf2", specifier = ">=3.0.1" },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "python-docx", specifier = ">=1.2.0" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "sentence-transformers", specifier = ">=5.1.1" },
     { name = "transformers", specifier = ">=4.56.2" },
 ]
