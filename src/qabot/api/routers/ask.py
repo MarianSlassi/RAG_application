@@ -8,7 +8,7 @@ from src.qabot.api.schemas import Source, Timing, AskResponse
 from src.qabot.api.responses import ask_responses
 
 ask_router = APIRouter()
-@ask_router.post("/asl", response_model= AskResponse, responses= ask_responses)
+@ask_router.post("/ask", response_model= AskResponse, responses= ask_responses)
 async def ask(request: Request, payload: AskRequest, retriever = Depends(get_retriever), llm = Depends(get_llm)):
     perf_total_start = time.perf_counter()
 
