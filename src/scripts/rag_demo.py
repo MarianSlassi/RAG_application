@@ -32,7 +32,7 @@ def ask_model(question:str, llm, retriever):
     # This message comes from the long string when we tokenize it to cut: Token indices sequence length is longer than the specified maximum sequence length for this model (590 > 512). Running this sequence through the model will result in indexing errors
     titles = [chunk for chunk, score in sources]
     document_titles = ",\n ".join(f'{i+1} {chunk.meta.document_title}' for i, chunk in enumerate(titles))
-    answer = llm.generate(question=question, sources=titles, system_prompt=system_prompt, user_prompt=user_prompt)
+    answer = llm.generate(system_prompt=system_prompt, user_prompt=user_prompt)
     print('-----retrieved documents: ----- \n', document_titles)
     print('-----LLM answer-----\n', answer)
     print('-'*20)

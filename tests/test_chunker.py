@@ -95,6 +95,7 @@ def test_documents_to_chunks_creates_expected_meta(
     assert first.meta.section_id == 0
     assert first.meta.section_title == ""
     assert first.meta.tokens == len(chunker.tokenizer.encode(first.text))
+    assert first.meta.updated_at == sample_document.updated_at
 
 
 def test_documents_to_chunks_rejects_min_tokens_not_less_than_context(

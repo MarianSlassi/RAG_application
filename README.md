@@ -23,6 +23,9 @@ Navigate to root/docs to get info about classes used in the project, the short l
 Since src/ and tests/ are neighboring subfolders, run tests from project root with:
 - `python -m pytest tests/test_loader.py`
 - `python -m pytest tests/test_chunker.py`
+# Scripts
+`uv run python -m src.scripts.docs_2_chunks` - to chunk documents and save it with index
+
 # Running LLM() class
 ## Routers
 ### Route.OPENROUTES
@@ -35,5 +38,11 @@ To start application with Route.AWS make sure you have configured and activate a
     </br>`export AWS_PROFILE=[profilename]` - to activate profile which you need, use it without squared brackets
 It's also important to make sure you have model avaialable in your accout, 
 and that this model is available for the region which you configure in the profile or with client (boto3)
+
+# Web API
+## Running
+Original: `uvicorn src.qabot.api.main:app`</br>
+For tests and development: `uvicorn src.qabot.api.main_test:app`
 # Schemas
 # Other
+
