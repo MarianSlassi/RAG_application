@@ -28,3 +28,4 @@ def create_app(lifespan) -> FastAPI:
     return app
 
 app = create_app(lifespan=lifespan)
+
