@@ -42,8 +42,8 @@ and that this model is available for the region which you configure in the profi
 # Web API
 ## Running
 ### Backend
+### Backend
 Original: `uvicorn src.qabot.api.main:app`</br>
-For tests and development: `uvicorn src.qabot.api.main_test:app`
 ### Front
 streamlit run src/qabot/web/app.py
 # Schemas
