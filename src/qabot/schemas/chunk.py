@@ -7,7 +7,7 @@ class Meta(BaseModel):
     document_title: str = Field(..., min_length=1, max_length=300, description="Document title")
     path: str = Field(..., pattern=r"data/.+\.(pdf|md|docx)$", description="Path to file inside the data/ directory")
     tokens: int = Field(..., ge=1, le=2048, description="Number of tokens in the chunk")
-    updated_at: date = Field(...,description="Last time when parent document of chunk was added")
+    updated_at: date = Field(...,description="Last time when parent document of chunk was modified")
 
 class Chunk(BaseModel):
     id: str = Field(..., pattern=r"^[\w\-]+_\d+$", description="ID in format slug_section_subsection")
