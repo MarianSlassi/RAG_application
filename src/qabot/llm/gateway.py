@@ -8,8 +8,8 @@ from typing import Any
 
 from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from src.qabot import Retriever, Indexer
-from src import Chunk
-from src import load_project_config
+from src.qabot.schemas import Chunk
+from src.qabot.helpers import load_project_config
 
 class Route(StrEnum):
     AWS = "aws"

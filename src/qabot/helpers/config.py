@@ -15,8 +15,8 @@ class Config:
     and guarantees the corresponding directories exist.
     """
     def __init__(self, base_dir: Path = None, indexer_dir: Path=None, **custom_paths):
-        self.base_dir = base_dir or Path(__file__).resolve().parents[2] / 'data' # store all data in dedicated folder ⚠️
-        self.indexer_dir = base_dir or Path(__file__).resolve().parents[2] / '.index' # store all data in dedicated folder ⚠️
+        self.base_dir = base_dir or Path(__file__).resolve().parents[3] / 'data' # store all data in dedicated folder ⚠️
+        self.indexer_dir = base_dir or Path(__file__).resolve().parents[3] / '.index' # store all data in dedicated folder ⚠️
         print(f'Config initialized with \n base_dir: {self.base_dir}')
         '''
         Supposed config will be stored at src/helpers/config.py

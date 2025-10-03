@@ -1,7 +1,7 @@
 import faiss
 from sentence_transformers import SentenceTransformer
 
-from src import Chunk
+from ..schemas import Chunk
 
 class Retriever:
     def __init__(self, index: faiss.IndexFlatIP, chunks: list[Chunk], model: SentenceTransformer):

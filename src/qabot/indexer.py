@@ -2,19 +2,20 @@ from pathlib import Path
 import pickle
 import numpy as np
 import faiss
-from src import Chunk
+from src.qabot.schemas import Chunk
 from sentence_transformers import SentenceTransformer
 
-from src import Config
+from .helpers import Config
 
 class Indexer():
     """Builds and queries a FAISS index over text chunks encoded with SentenceTransformer embeddings."""
 
     def __init__(self, config: Config | None = None, model_name: str = 'sentence-transformers/all-MiniLM-L6-v2' ):
-        """Configure index storage and embedding model.
+        """
+        Configure index storage and embedding model.
 
         Args:
-            config: Optional `Config`. If omitted, a default instance creates/uses `.index/index.faiss` and `chunks.pkl`.
+            config: Optional `Config`. If omitted, by default instance uses `.index/index.faiss` and `chunks.pkl`.
             model_name: str - SentenceTransformer model identifier used for both indexing and querying.
         """
         self.config = config or Config()

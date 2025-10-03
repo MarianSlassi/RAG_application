@@ -1,0 +1,32 @@
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+
+from src.qabot.indexer import Indexer
+from src.qabot.search import Retriever
+from src.qabot.llm.gateway import LLM, Route
+from src.qabot.helpers.logger import get_custom_logger 
+from src.qabot.api.routers.health import health_router
+from src.qabot.api.routers.ask import ask_router
+
+logger= get_custom_logger(log_file='main')
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    indexer = Indexer()
+    index, chunks, model = indexer.load_index()
+    app.state.retriever = Retriever(index=index,chunks=chunks,model=model)
+    app.state.llm = LLM(route=Route.AWS)
+    yield
+
+def create_app(lifespan) -> FastAPI:
+    app = FastAPI(
+        title="RAG_QA_bot",
+        version="0.1.0",
+        description="FastAPI service for Retrieval-Augumented Generator LLM calling.",
+        lifespan = lifespan
+    )
+    app.include_router(health_router)
+    app.include_router(ask_router)
+    return app
+
+app = create_app(lifespan=lifespan)
+

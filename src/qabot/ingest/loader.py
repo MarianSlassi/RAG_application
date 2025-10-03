@@ -4,8 +4,8 @@ from datetime import datetime, date
 from PyPDF2 import PdfReader
 from docx import Document as DocxDocument
 
-from src.schemas import Document
-from src.helpers import Config
+from ..helpers import Config
+from ..schemas import Document
 
 
 class DocumentLoader():

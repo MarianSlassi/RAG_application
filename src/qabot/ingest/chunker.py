@@ -3,9 +3,7 @@ import re
 
 from transformers import AutoTokenizer
 
-from src.schemas import Document
-from src.schemas.chunk import Chunk, Meta
-
+from ..schemas import Document, Chunk, Meta
 
 class Chunker:
     """
@@ -201,7 +199,7 @@ class Chunker:
             document_title, path = None, None
             document_title = doc.title
             path = doc.path
-
+            updated_at = doc.updated_at
             splitted_document_text = self._split_text(document= doc)
             splitted_document_text = self._process_split_text(splitted_document_text, min_tokens=min_tokens)
 
@@ -209,7 +207,7 @@ class Chunker:
                 id = document_title + '_' +  str(section_id)
                 tokens = self._count_tokens(chunk)
 
-                meta = Meta(document_title = document_title, path=path, section_id=section_id,tokens=tokens, section_title='')
+                meta = Meta(document_title = document_title, path=path, section_id=section_id,tokens=tokens, section_title='',updated_at=updated_at)
                 chunk_object = Chunk(id = id, text = chunk, meta = meta)
                 chunks_array.append(chunk_object)
 
