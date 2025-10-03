@@ -14,10 +14,6 @@ class Chunk(BaseModel):
     text: str = Field(..., min_length=1, description="Chunk text")
     meta: Meta
 
-
-# Old 'id' field pattern    id: str = Field(..., pattern=r"^[\w\-]+_\d+_\d+$", description="ID in format slug_section_subsection")
-
-
 # Naive Mocking template:
 # Chunk(
 #     id="094_configuring-a-company-issued-device-for-international-travel_0_1",

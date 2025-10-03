@@ -62,8 +62,8 @@ class LLM:
         Generate an answer using the LLM.
 
         Args:
-            question (str): User question.
-            sources (list[str]): List of text chunks (retrieved).
+            system_prompt (str)
+            user_prompt (str)
 
         Returns:
             str: Final answer with citations (or "I don’t know").

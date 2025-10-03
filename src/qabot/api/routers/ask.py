@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request, Depends
 from src.qabot.api.schemas import AskRequest
 from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from src.qabot.api.dependencies import get_retriever, get_llm
-from src.qabot.api.schemas import Source, Timing, AskResponse
+from src.qabot.api.schemas import Timing, AskResponse
 from src.qabot.api.responses import ask_responses
 
 ask_router = APIRouter()

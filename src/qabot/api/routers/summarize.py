@@ -1,16 +1,14 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends
+
+from src.qabot.api.schemas.schemas import BaseConversationRequest, HistorySummary
+from src.qabot.api.dependencies import get_llm
+from src.qabot.llm.prompts import SYSTEM_PROMPT_SUMMARIZE
 
 summarize_router = APIRouter()
-
-class SummarizeRequest(BaseModel):
-    session_id: str
-    turns: list[dict[str, str]]
-    current_summary: str = ""
-
 @summarize_router.post("/summarize")
-async def summarize(payload: SummarizeRequest) -> dict[str, str]:
-    turns_text = "\n".join(f"{t['role']}: {t['content']}" for t in payload.turns)
-    summary = (payload.current_summary + "\n" + turns_text).strip()
-    summary = summary[-1000:]  # наивное укорочение
-    return {"summary": summary}
+async def summarize(payload: BaseConversationRequest, llm = Depends(get_llm)) -> HistorySummary:
+    turns_text = "\n".join(f"{t.role}: {t.content}" for t in payload.last_turns)
+    summary_turns_text = ( "\nCurrent chat summary:\n" + payload.history_summary + "\nCurrent dialog:\n" + turns_text).strip()
+    print('summary_turns_text', summary_turns_text)
+    history_summary = llm.generate(system_prompt =  SYSTEM_PROMPT_SUMMARIZE, user_prompt = summary_turns_text)
+    return HistorySummary(history_summary=history_summary)
