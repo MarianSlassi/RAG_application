@@ -20,3 +20,7 @@ llm:
       temperature: 0.2
 
 
+web:
+  frontend:
+    backend_host: http://127.0.0.1:8000 # To which backend host front calling - default uvicorn host:port 
+    max_buffer: 6 # The maximum length of stored messages in chat history

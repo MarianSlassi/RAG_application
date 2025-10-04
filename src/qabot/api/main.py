@@ -8,6 +8,7 @@ from src.qabot.helpers.logger import get_custom_logger
 from src.qabot.api.routers.health import health_router
 from src.qabot.api.routers.ask import ask_router
 from src.qabot.api.routers.summarize import summarize_router
+
 logger= get_custom_logger(log_file='main')
 @asynccontextmanager
 async def lifespan(app: FastAPI):

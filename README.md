@@ -42,9 +42,9 @@ and that this model is available for the region which you configure in the profi
 # Web API
 ## Running
 ### Backend
-Original: `uvicorn src.qabot.api.main:app`</br>
+Original: `uv run uvicorn src.qabot.api.main:app`</br>
 ### Front
-streamlit run src/qabot/web/app.py
+`uv run python -m streamlit run src/qabot/web/app.py`
 # Schemas
 # Other
 

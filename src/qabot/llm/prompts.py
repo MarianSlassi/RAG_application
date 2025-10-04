@@ -23,7 +23,9 @@ Write a concise answer based only on these sources.
 
 SYSTEM_PROMPT_SUMMARIZE = """
 User will send you conversation history between human and RAG chat assistant.
-Summarize their conversation. Goal is to compress context of previous messages, to not hold the full conversation in memmory, but preserve the context.
+Summarize their conversation. Goal is to compress context of previous messages. To not hold the full conversation in memmory, but preserve the context.
 You also have previous summarization embedded in user questions to preserve the conversation context in a full.
+Note that chat history might be not full, and might be interrupted due to system buffer outflow, in this case you'l
+need to find and filter last messages if they don't serve dialog context and meaning.
 """
 # Note that summarised text means all that happend in coversation before the actual dialog between human and assistant which you receive. 

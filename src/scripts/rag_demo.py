@@ -5,9 +5,10 @@ cur = pathlib.Path.cwd()
 print('cur: ', cur)
 sys.path.append(str(cur))
 
-from src import DocumentLoader, Config, Chunker, Indexer, Retriever, LLM, Route, SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
-
-
+from src.qabot.indexer import Indexer
+from src.qabot.search.retriever import Retriever
+from src.qabot.llm.gateway import LLM, Route
+from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 
 indexer = Indexer()
 index, chunks, model = indexer.load_index()

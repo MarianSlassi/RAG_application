@@ -5,7 +5,6 @@ from datetime import date
 # summarize - response
 class HistorySummary(BaseModel):
     history_summary: str = Field(..., description="Summary of previous messages, to suit the context limit", examples=["User came with question about weather but model answerd that it doesn\'t know"] )
-
 # summarize - request
 class Turn(BaseModel):
     role: Literal['user','assistant'] = Field(..., description="Role of chat participant", examples=["user"])
