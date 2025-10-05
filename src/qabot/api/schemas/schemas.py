@@ -30,3 +30,4 @@ class AskResponse(BaseModel):
     answer: str
     sources: list[Source]
     timing: Timing
+

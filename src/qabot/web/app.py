@@ -3,7 +3,6 @@ import uuid
 import requests
 import streamlit as st
 
-
 from src.qabot.helpers.project_config import load_project_config
 from src.qabot.api.schemas.schemas import Turn, AskRequest
 
@@ -11,6 +10,7 @@ project_config = load_project_config()
 
 API_BASE = project_config['web']['frontend']['backend_host']
 max_buffer = project_config['web']['frontend']['max_buffer']
+hold_after_summarization = project_config['web']['frontend']['hold_after_summarization']
 
 def init_state() -> None:
     if "session_id" not in st.session_state:
@@ -22,11 +22,9 @@ def init_state() -> None:
     if "messages" not in st.session_state:
         st.session_state.messages = [] 
 
-def last_turns(payload_turns: list[Turn], window: int = 4) -> list[Turn]:
-    return payload_turns[-window:]
 
 def summarize_if_needed(threshold: int = 6) -> None:
-    if len(st.session_state.turns) < threshold:
+    if len(st.session_state.turns) <= threshold:
         return
     try:
         response = requests.post(
@@ -40,7 +38,7 @@ def summarize_if_needed(threshold: int = 6) -> None:
         )
         response.raise_for_status()
         st.session_state.history_summary = response.json()["history_summary"]
-        st.session_state.turns = st.session_state.turns[-4:]
+        st.session_state.turns = st.session_state.turns[-hold_after_summarization:]
     except requests.RequestException as exc:
         st.warning(f"Update unsuccessful: {exc}")
 
@@ -48,10 +46,12 @@ def send_message(question: str) -> None:
     """
     Sends question to ask/ endpoint and save it along with answer to appropriate session_state fields
     """
+    
+    summarize_if_needed(threshold=max_buffer)
     payload = AskRequest(
         session_id = st.session_state.session_id,
         history_summary = st.session_state.history_summary,
-        last_turns = last_turns(st.session_state.turns),
+        last_turns = st.session_state.turns,
         question = question,
     ).model_dump()
     st.session_state.turns.append({"role": "user", "content": question})
@@ -68,7 +68,7 @@ def send_message(question: str) -> None:
     st.session_state.turns.append({"role": "assistant", "content": answer})
     st.session_state.messages.append(("assistant", answer, sources))
 
-    summarize_if_needed(threshold=max_buffer)
+    
 
 def main() -> None:
     st.set_page_config(page_title="🌊RAG Chat🌊", page_icon="🔥", layout="wide")

@@ -24,3 +24,10 @@ web:
   frontend:
     backend_host: http://127.0.0.1:8000 # To which backend host front calling - default uvicorn host:port 
     max_buffer: 6 # The maximum length of stored messages in chat history
+    hold_after_summarization: 4 # How many last messages hold after summarization
+
+logger:
+  level: 
+    global: DEBUG # Filter before files and console level
+    files: INFO # or DEBUG
+    console: DEBUG

@@ -12,10 +12,10 @@ logger = get_custom_logger('ask/')
 
 ask_router = APIRouter()
 @ask_router.post("/ask", response_model= AskResponse, responses= ask_responses)
-async def ask(request: Request, payload: AskRequest, retriever = Depends(get_retriever), llm = Depends(get_llm)):
+async def ask(payload: AskRequest, retriever = Depends(get_retriever), llm = Depends(get_llm)):
     perf_total_start = time.perf_counter()
     logger.info('Request received')
-    logger.debug('Request: \n', request.body)
+    logger.debug(f'Request: \n {payload}')
     perf_retrieve_start = time.perf_counter()
     question=payload.question.strip()
     retrieved = retriever.retrieve(question, k=5)
