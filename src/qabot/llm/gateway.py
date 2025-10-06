@@ -1,14 +1,11 @@
 import os
-from openai import OpenAI 
 from dotenv import load_dotenv
+from typing import Any
+from openai import OpenAI 
 from enum import StrEnum
 import boto3
-from typing import Any
 
 
-from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
-from src.qabot import Retriever, Indexer
-from src.qabot.schemas import Chunk
 from src.qabot.helpers import load_project_config
 
 class Route(StrEnum):
@@ -62,14 +59,12 @@ class LLM:
         Generate an answer using the LLM.
 
         Args:
-            question (str): User question.
-            sources (list[str]): List of text chunks (retrieved).
+            system_prompt (str)
+            user_prompt (str)
 
         Returns:
             str: Final answer with citations (or "I don’t know").
         Depends on:
-            Variables from other project files:
-                SYSTEM_PROMPT,USER_PROMPT_TEMPLATE
             Project Config variables:
                 ['llm']['openai']['model_settings']['model']
                 ['llm']['openai']['model_settings']['max_tokens']

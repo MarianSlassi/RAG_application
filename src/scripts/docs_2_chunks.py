@@ -1,8 +1,7 @@
-# script for chunking and indexating files
-from src  import DocumentLoader
-from src  import Config
-from src  import Chunker
-from src  import Indexer
+from    src.qabot.ingest.loader    import DocumentLoader
+from    src.qabot.helpers.config   import Config
+from    src.qabot.ingest.chunker   import Chunker
+from    src.qabot.indexer          import Indexer
 
 def main():
     config = Config()

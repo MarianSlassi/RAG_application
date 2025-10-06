@@ -4,14 +4,18 @@ from fastapi import APIRouter, Request, Depends
 from src.qabot.api.schemas import AskRequest
 from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from src.qabot.api.dependencies import get_retriever, get_llm
-from src.qabot.api.schemas import Source, Timing, AskResponse
+from src.qabot.api.schemas import Timing, AskResponse
 from src.qabot.api.responses import ask_responses
+from src.qabot.helpers.logger import get_custom_logger 
+
+logger = get_custom_logger('ask/')
 
 ask_router = APIRouter()
 @ask_router.post("/ask", response_model= AskResponse, responses= ask_responses)
-async def ask(request: Request, payload: AskRequest, retriever = Depends(get_retriever), llm = Depends(get_llm)):
+async def ask(payload: AskRequest, retriever = Depends(get_retriever), llm = Depends(get_llm)):
     perf_total_start = time.perf_counter()
-
+    logger.info(f'Request received: {payload.session_id}')
+    logger.debug(f'Request: \n {payload}')
     perf_retrieve_start = time.perf_counter()
     question=payload.question.strip()
     retrieved = retriever.retrieve(question, k=5)
