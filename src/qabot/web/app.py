@@ -1,4 +1,3 @@
-# src/qabot/web/app.py
 import uuid
 import requests
 import streamlit as st
@@ -99,7 +98,8 @@ def main() -> None:
         user_prompt = st.chat_input("Ask a question…")
         if user_prompt:
             st.session_state.messages.append(("user", user_prompt, []))
-            send_message(user_prompt)
+            with st.spinner("Waiting for assistent answer"):
+                send_message(user_prompt)
             st.rerun()
     
 
