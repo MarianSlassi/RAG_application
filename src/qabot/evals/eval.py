@@ -40,6 +40,7 @@ def evaluate(config, project_config):
     logger.debug(f'Questions from questions.csv: {questions}')
     precision_at_k = 0
     recall_at_k = 0
+    mrr_total = 0
     test_frame_len = questions.shape[0]
     retrieving_depth = project_config['retriever']['k']
     ASK_ENDPOINT = project_config['web']['frontend']['backend_host'] + '/ask'
@@ -69,18 +70,22 @@ def evaluate(config, project_config):
 
         precision, recall = precision_recall_at_k(sources, golden_path)
         precision_at_k +=precision
-        recall_at_k+=recall
+        recall_at_k +=recall
+        rr = reciprocal_rank(sources, golden_path)
+        mrr_total += rr
+
         logger.debug(f"For {n} question:\n")
         logger.debug(f"Current question Precision@{retrieving_depth} = {precision:.2f}")
         logger.debug(f"Current question Recall@{retrieving_depth} = {recall:.2f}")
-    precision_at_k = precision_at_k / test_frame_len
-    recall_at_k = recall_at_k / test_frame_len
+    precision_at_k /= test_frame_len
+    recall_at_k /= test_frame_len
+    mrr_total /= test_frame_len
     logger.info(f'Overal Precision@{retrieving_depth} : {precision_at_k}')
     logger.info(f'Overal Recall@{retrieving_depth} : {recall_at_k} ')
 
         
-def precision_recall_at_k(all_sources_paths, golden_path):
-    retrieved = all_sources_paths
+def precision_recall_at_k(retrieved, golden_path):
+    retrieved = retrieved
     relevant = golden_path
 
     retrieved_set = set(retrieved)
@@ -93,6 +98,12 @@ def precision_recall_at_k(all_sources_paths, golden_path):
     recall = true_positives / len(relevant) if relevant else 0
 
     return precision, recall
+
+def reciprocal_rank(retrieved, relevant):
+    for idx, doc in enumerate(retrieved, start=1):
+        if doc in relevant:
+            return 1 / idx
+    return 0
 
     
 if __name__ == '__main__':
