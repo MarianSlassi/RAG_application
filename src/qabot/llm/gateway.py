@@ -1,12 +1,16 @@
 import os
-from dotenv import load_dotenv
+import time
 from typing import Any
-from openai import OpenAI 
 from enum import StrEnum
+from dotenv import load_dotenv
+from openai import OpenAI
 import boto3
-
+import botocore
 
 from src.qabot.helpers import load_project_config
+from src.qabot.helpers.logger import get_custom_logger
+
+logger = get_custom_logger(__name__)
 
 class Route(StrEnum):
     AWS = "aws"
@@ -64,44 +68,70 @@ class LLM:
 
         Returns:
             str: Final answer with citations (or "I don’t know").
-        Depends on:
-            Project Config variables:
-                ['llm']['openai']['model_settings']['model']
-                ['llm']['openai']['model_settings']['max_tokens']
-                ['llm']['openai']['model_settings']['temperature']
-                ['llm']['aws']['model_settings']['model_id']
-                ['llm']['aws']['model_settings']["max_tokens"]
-                ['llm']['aws']['model_settings']["temperature"]
-
         """
         if self.route is Route.OPENROUTES:
-            complition = self.client.chat.completions.create(
-                model=self.config['llm']['openai']['model_settings']['model'],
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt },
-                ],
-                max_tokens=self.config['llm']['openai']['model_settings']['max_tokens'],
-                temperature=self.config['llm']['openai']['model_settings']['temperature'],
-            )
-            answer = complition.choices[0].message.content
+            answer = self._generate_openai(system_prompt=system_prompt, user_prompt=user_prompt)
         elif self.route is Route.AWS:    
-            messages = [
-                    {"role": "user", "content": [{'text': user_prompt}]},
-                ]
-            system = [{'text': system_prompt}]
-            response = self.client.converse(
-                modelId=self.config['llm']['aws']['model_settings']['model_id'],
-                messages=messages,
-                system = system,
-                inferenceConfig={
-                    'maxTokens': self.config['llm']['aws']['model_settings']["max_tokens"],
-                    'temperature':self.config['llm']['aws']['model_settings']["temperature"],
-                    }
-            )
-            answer = response['output']['message']['content'][0]['text']
+            answer = self._generate_aws(system_prompt=system_prompt, user_prompt=user_prompt)
         else:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
         
 
         return  answer
+    def _generate_openai(self, system_prompt, user_prompt):
+        """
+        Depends on:
+            Project Config variables:
+                ['llm']['openai']['model_settings']['model']
+                ['llm']['openai']['model_settings']['max_tokens']
+                ['llm']['openai']['model_settings']['temperature']
+        """
+        complition = self.client.chat.completions.create(
+            model=self.config['llm']['openai']['model_settings']['model'],
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt },
+            ],
+            max_tokens=self.config['llm']['openai']['model_settings']['max_tokens'],
+            temperature=self.config['llm']['openai']['model_settings']['temperature'],
+        )
+        return complition.choices[0].message.content
+    def _generate_aws(self, system_prompt, user_prompt):
+        """
+        Depends on:
+            Project Config variables:
+                ['llm']['aws']['model_settings']['model_id']
+                ['llm']['aws']['model_settings']["max_tokens"]
+                ['llm']['aws']['model_settings']["temperature"]
+        """
+        messages = [
+                {"role": "user", "content": [{'text': user_prompt}]},
+            ]
+        system = [{'text': system_prompt}]
+
+        max_attempts=self.config['llm']['retry_on_throttling']['max_attempts']
+        base_delay = self.config['llm']['retry_on_throttling']['base_delay']
+        for attempt in range(max_attempts):
+            try:
+                response = self.client.converse(
+                    modelId=self.config['llm']['aws']['model_settings']['model_id'],
+                    messages=messages,
+                    system = system,
+                    inferenceConfig={
+                        'maxTokens': self.config['llm']['aws']['model_settings']["max_tokens"],
+                        'temperature':self.config['llm']['aws']['model_settings']["temperature"],
+                        }
+                )  
+            except botocore.exceptions.ClientError as e:
+                if e.response["Error"]["Code"] == "ThrottlingException":
+                    wait = base_delay ** attempt
+                    logger.warning(f"Rate limit hit, retrying in {wait}s (attempt {attempt + 1}/{max_attempts})...")
+                    time.sleep(wait)
+                else:
+                    raise
+            
+        return response['output']['message']['content'][0]['text']
+    # TODO: integrate retry as decorator also for Route.OPENROUTES - not integrated yet, cause clinet calling better to cope into independent class  
+
+
+
