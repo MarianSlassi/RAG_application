@@ -86,8 +86,9 @@ def evaluate(config, project_config, questions_num:int = 50):
     questions['golden_path'] = questions['golden_path'].apply(ast.literal_eval)
     logger.debug(f'Questions from questions.csv: {questions}')
     llm_eval = llm_evaluator(project_config = project_config)
-    precision_at_1, recall_at_1, precision_at_3, recall_at_3, precision_at_5, recall_at_5 = (0,) *6
-    faithfulness_total, relevance_total, completeness_total, consisness_total, overall_score_total, comments_total = (0,) * 6
+    precision_at_1, recall_at_1, precision_at_3, recall_at_3, precision_at_5, recall_at_5 = (0,) * 6
+    faithfulness_total, relevance_total, completeness_total, consisness_total, overall_score_total = (0,) * 5
+    retrieve_ms_overall, llm_ms_overall, total_ms_overall = (0,) * 3
     mrr_total = 0
     test_frame_len = questions.shape[0]
     retrieving_depth = project_config['retriever']['k']
@@ -107,8 +108,11 @@ def evaluate(config, project_config, questions_num:int = 50):
         )
         #breakpoint()
         sources = [source['path'] for source in response.json()['sources']]
-
         answer = response.json()['answer']
+
+        retrieve_ms_overall += response.json()['timing']['retrieve_ms']
+        llm_ms_overall      += response.json()['timing']['llm_ms']
+        total_ms_overall    += response.json()['timing']['total_ms']
         
         logger.debug(f'\n\n\n SOURCES FROM RESPONSE: \n\n\n{(sources)}' )
         logger.debug(f'\n\n\nGOLDEN PATH: {golden_path}')
@@ -156,6 +160,10 @@ def evaluate(config, project_config, questions_num:int = 50):
         logger.debug(f"Current question consisness: {consisness}")
         logger.debug(f"Current question overall_score: {overall_score}")
 
+        logger.debug(f"Current question retrieve_ms: {response.json()['timing']['retrieve_ms']}")
+        logger.debug(f"Current question llm_ms: {response.json()['timing']['llm_ms']} ")
+        logger.debug(f"Current question total_ms: {response.json()['timing']['total_ms']} \n")
+
 
     precision_at_1 /= test_frame_len
     recall_at_1 /= test_frame_len
@@ -170,21 +178,29 @@ def evaluate(config, project_config, questions_num:int = 50):
     consisness_total /= test_frame_len
     overall_score_total /= test_frame_len
 
-
-
     mrr_total /= test_frame_len
-    logger.info(f'Overal Precision@1 : {precision_at_1}')
-    logger.info(f'Overal Recall@1 : {recall_at_1} ')
-    logger.info(f'Overal Precision@3 : {precision_at_3}')
-    logger.info(f'Overal Recall@3 : {recall_at_3} ')
-    logger.info(f'Overal Precision@5 : {precision_at_5}')
-    logger.info(f'Overal Recall@5 : {recall_at_5} ')
 
-    logger.info(f"faithfulness_total : {faithfulness_total}")
-    logger.info(f"relevance_total : {relevance_total}")
-    logger.info(f"completeness_total : {completeness_total}")
-    logger.info(f"consisness_total : {consisness_total}")
-    logger.info(f"overall_score_total : {overall_score_total}")
+    retrieve_ms_overall /= test_frame_len
+    llm_ms_overall      /= test_frame_len
+    total_ms_overall    /= test_frame_len
+
+
+    logger.info(f'Overal Precision@1 : {precision_at_1:.4f}')
+    logger.info(f'Overal Recall@1 : {recall_at_1:.4f} ')
+    logger.info(f'Overal Precision@3 : {precision_at_3:.4f}')
+    logger.info(f'Overal Recall@3 : {recall_at_3:.4f} ')
+    logger.info(f'Overal Precision@5 : {precision_at_5:.4f}')
+    logger.info(f'Overal Recall@5 : {recall_at_5:.4f} ')
+
+    logger.info(f"Overall faithfulness : {faithfulness_total:.4f}")
+    logger.info(f"Overall relevance : {relevance_total:.4f}")
+    logger.info(f"Overall completeness : {completeness_total:.4f}")
+    logger.info(f"Overall consisness : {consisness_total:.4f}")
+    logger.info(f"Overall overall_score : {overall_score_total:.4f}")
+
+    logger.info(f"Overall retrieve_ms : {retrieve_ms_overall:.4f}")
+    logger.info(f"Overall llm_ms : {llm_ms_overall:.4f}")
+    logger.info(f"Overall total_ms : {total_ms_overall:.4f}")
 
 
         
