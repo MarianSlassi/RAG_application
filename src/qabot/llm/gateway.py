@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from typing import Any
 from enum import StrEnum
 from dotenv import load_dotenv
@@ -58,27 +59,28 @@ class LLM:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
 
 
-    def generate(self, system_prompt, user_prompt ) -> str | None:
+    def generate(self, system_prompt, user_prompt, structured: bool = False ) -> (str | dict | None):
         """
         Generate an answer using the LLM.
 
         Args:
-            system_prompt (str)
-            user_prompt (str)
+            system_prompt (str): System-level instruction.
+            user_prompt (str): User's query.
+            structured (bool): If True, expect JSON as output object (parsed to dict) in response.
 
         Returns:
-            str: Final answer with citations (or "I don’t know").
+            str | dict: String response or structured JSON object.
         """
         if self.route is Route.OPENROUTES:
-            answer = self._generate_openai(system_prompt=system_prompt, user_prompt=user_prompt)
+            answer = self._generate_openai(system_prompt=system_prompt, user_prompt=user_prompt, structured=structured)
         elif self.route is Route.AWS:    
             answer = self._generate_aws(system_prompt=system_prompt, user_prompt=user_prompt)
         else:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
         
 
-        return  answer
-    def _generate_openai(self, system_prompt, user_prompt):
+        return answer
+    def _generate_openai(self, system_prompt, user_prompt, structured: bool = False):
         """
         Depends on:
             Project Config variables:
@@ -86,16 +88,28 @@ class LLM:
                 ['llm']['openai']['model_settings']['max_tokens']
                 ['llm']['openai']['model_settings']['temperature']
         """
-        complition = self.client.chat.completions.create(
+        kwargs = dict(
             model=self.config['llm']['openai']['model_settings']['model'],
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt },
+                {"role": "user", "content": user_prompt},
             ],
             max_tokens=self.config['llm']['openai']['model_settings']['max_tokens'],
             temperature=self.config['llm']['openai']['model_settings']['temperature'],
-        )
-        return complition.choices[0].message.content
+            )
+        if structured:
+            kwargs["response_format"] = {"type": "json_object"}
+
+        completion = self.client.chat.completions.create(**kwargs)
+        content = completion.choices[0].message.content
+        if structured:
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to decode JSON from LLM: {e}\nContent: {content}")
+                return {"error": "Invalid JSON from model", "raw_content": content}
+            
+        return content
     def _generate_aws(self, system_prompt, user_prompt):
         """
         Depends on:

@@ -28,3 +28,47 @@ Note that chat history might be not full, and might be interrupted due to system
 need to find and filter last messages if they don't serve dialog context and meaning.
 """
 # Note that summarised text means all that happend in coversation before the actual dialog between human and assistant which you receive. 
+
+LLM_JUDGE_SYSTEM = """
+You are an impartial LLM evaluator. 
+Your task is to judge the quality of an LLM-generated answer in a RAG system.
+
+You will be given:
+- the original user question,
+- the retrieved context passages (snippets of documents),
+- the model's answer,
+- and optionally, a reference (ground-truth) answer.
+
+Evaluate the model's answer according to these criteria:
+
+1. **Faithfulness** — Does the answer align with the provided context? Avoids hallucinations.
+2. **Relevance** — Does it address the user question directly?
+3. **Completeness** — Does it include all key facts needed to fully answer?
+4. **Conciseness** — Is it clear and not overly verbose?
+
+Return your judgment as **structured JSON** in the following format:
+{
+  "faithfulness": float (0–1),
+  "relevance": float (0–1),
+  "completeness": float (0–1),
+  "conciseness": float (0–1),
+  "overall_score": float (0–1),
+  "comments": "Short reasoning (1–3 sentences)"
+}
+
+Do not include any additional text, only valid JSON.
+"""
+
+LLM_JUDGE_USER = """
+
+Question:
+{question}
+
+Retrieved Contexts:
+{context}
+
+Model Answer:
+{answer}
+"""
+# Reference Answer (optional):
+# {reference}

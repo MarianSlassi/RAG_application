@@ -25,7 +25,8 @@ llm:
       
 
 retriever:
-  k: 5 # Retrieve k most similar vector from vector storage
+  k: 15 # Retrieve k most similar vector from vector storage
+        # For evaluation script for @1, @3, @5 metricas set at least 5
 
 web:
   frontend:
