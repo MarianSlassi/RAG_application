@@ -192,15 +192,15 @@ def evaluate(config, project_config, questions_num:int = 50):
     logger.info(f'Overal Precision@5 : {precision_at_5:.4f}')
     logger.info(f'Overal Recall@5 : {recall_at_5:.4f} ')
 
-    logger.info(f"Overall faithfulness : {faithfulness_total:.4f}")
-    logger.info(f"Overall relevance : {relevance_total:.4f}")
-    logger.info(f"Overall completeness : {completeness_total:.4f}")
-    logger.info(f"Overall consisness : {consisness_total:.4f}")
-    logger.info(f"Overall overall_score : {overall_score_total:.4f}")
+    logger.info(f"Overall faithfulness : {faithfulness_total:.2f}")
+    logger.info(f"Overall relevance : {relevance_total:.2f}")
+    logger.info(f"Overall completeness : {completeness_total:.2f}")
+    logger.info(f"Overall consisness : {consisness_total:.2f}")
+    logger.info(f"Overall overall_score : {overall_score_total:.2f}")
 
-    logger.info(f"Overall retrieve_ms : {retrieve_ms_overall:.4f}")
-    logger.info(f"Overall llm_ms : {llm_ms_overall:.4f}")
-    logger.info(f"Overall total_ms : {total_ms_overall:.4f}")
+    logger.info(f"Overall retrieve_ms : {retrieve_ms_overall:.1f}")
+    logger.info(f"Overall llm_ms : {llm_ms_overall:.1f}")
+    logger.info(f"Overall total_ms : {total_ms_overall:.1f}")
 
 
         
@@ -235,4 +235,3 @@ if __name__ == '__main__':
    config = Config()
    project_config = load_project_config()
    evaluate(config = config, project_config= project_config) # For script testing add parametr ,questions_num = 10 (for example)
-

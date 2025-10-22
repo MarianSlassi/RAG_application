@@ -71,9 +71,12 @@ class LLM:
         Returns:
             str | dict: String response or structured JSON object.
         """
+        
         if self.route is Route.OPENROUTES:
             answer = self._generate_openai(system_prompt=system_prompt, user_prompt=user_prompt, structured=structured)
-        elif self.route is Route.AWS:    
+        elif self.route is Route.AWS:
+            if structured:
+                raise ValueError("Using structured output isn't possible with AWS in current version")
             answer = self._generate_aws(system_prompt=system_prompt, user_prompt=user_prompt)
         else:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
