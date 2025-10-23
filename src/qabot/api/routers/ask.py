@@ -7,18 +7,21 @@ from src.qabot.api.dependencies import get_retriever, get_llm
 from src.qabot.api.schemas import Timing, AskResponse
 from src.qabot.api.responses import ask_responses
 from src.qabot.helpers.logger import get_custom_logger 
+from src.qabot.helpers.project_config import load_project_config
+
 
 logger = get_custom_logger('ask/')
+project_config = load_project_config()
 
 ask_router = APIRouter()
-@ask_router.post("/ask", response_model= AskResponse, responses= ask_responses)
-async def ask(payload: AskRequest, retriever = Depends(get_retriever), llm = Depends(get_llm)):
+@ask_router.post("/ask", response_model= AskResponse, responses = ask_responses)
+def ask(payload: AskRequest, retriever = Depends(get_retriever), llm = Depends(get_llm)):
     perf_total_start = time.perf_counter()
     logger.info(f'Request received: {payload.session_id}')
     logger.debug(f'Request: \n {payload}')
     perf_retrieve_start = time.perf_counter()
-    question=payload.question.strip()
-    retrieved = retriever.retrieve(question, k=5)
+    question = payload.question.strip()
+    retrieved = retriever.retrieve(question, k=project_config['retriever']['k'])
     perf_retrieve_end = time.perf_counter()
 
     perf_llm_start = time.perf_counter()
@@ -49,4 +52,5 @@ async def ask(payload: AskRequest, retriever = Depends(get_retriever), llm = Dep
     total_ms = int((perf_total_end - perf_total_start ) * 1000)
     )
     endpoint_response = AskResponse(answer= answer, sources= unique_sources, timing= timing)
+    logger.debug(f'Response: {endpoint_response}')
     return endpoint_response

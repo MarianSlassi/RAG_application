@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     indexer = Indexer()
     index, chunks, model = indexer.load_index()
     app.state.retriever = Retriever(index=index,chunks=chunks,model=model)
-    app.state.llm = LLM(route=Route.AWS)
+    app.state.llm = LLM(route=Route.OPENROUTES)
     yield
 
 def create_app(lifespan) -> FastAPI:

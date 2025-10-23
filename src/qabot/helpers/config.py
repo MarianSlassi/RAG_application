@@ -69,13 +69,16 @@ class Config:
 
             # Validated_3
             'validated_dir':              validated_dir,
-            
+            'all_documents_dump':         validated_dir / 'all_documents_dump.txt', # used at qabot/evals
+
             # Cleaned_02
             'cleaned_dir':                cleaned_dir,
 
             # Raw _01
             'raw_dir':                    raw_dir,
-            'canonical_dir':              raw_dir / 'it-knowledge' / 'canonical'
+            'canonical_dir':              raw_dir / 'it-knowledge' / 'canonical',
+            'questions':                  raw_dir / 'golden_path' / 'questions.csv',
+            'questions_advanced':         raw_dir / 'golden_path' /'questions_advanced.csv'
         }
 
     def get(self, key : str) -> Path:

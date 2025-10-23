@@ -7,3 +7,4 @@ test_md_files/
 .index/
 .venv/
 *.pseudo-folders*
+*.pytest_cache
