@@ -9,10 +9,14 @@ def get_retriever(request: Request):
 def get_llm(request: Request):
     return request.app.state.llm
 
-def get_db_connection():
-    config = Config()
-    with Database._connect(config['logs_db']) as conn:
-        yield conn
-
 def get_project_config(requests: Request):
     return requests.app.state.project_config
+
+def get_tokenizer(request: Request):
+    return request.app.state.tokenizer
+
+def get_log_repo(request: Request):
+    config = Config()
+    with Database._connect(config['logs_db']) as conn:
+        yield LogRepository(conn=conn)
+    

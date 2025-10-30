@@ -6,7 +6,6 @@ from .models import LogRecord
 
 from src.qabot.helpers.config import Config
 
-
 class Database:
     @contextmanager
     @staticmethod
@@ -19,8 +18,10 @@ class Database:
             conn.close()
 
 class LogRepository:
-    def _ensure_schema(self, conn):
-        conn.execute("""
+    def __init__(self, conn):
+        self.conn = conn
+    def _ensure_schema(self):
+        self.conn.execute("""
         CREATE TABLE IF NOT EXISTS logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp TEXT,
@@ -33,14 +34,14 @@ class LogRepository:
         llm_ms INTEGER,
         total_ms INTEGER )
         """)
-        conn.commit() 
+        self.conn.commit() 
 
-    def create(self, record: LogRecord, conn):
-        self._ensure_schema(conn)
+    def create(self, record: LogRecord):
+        self._ensure_schema()
         """
         Returns id of last added row
         """
-        cursor = conn.execute("""
+        cursor = self.conn.execute("""
         INSERT INTO logs (timestamp, session_id, question, answer, top_doc_paths,
                         answer_length, retrieve_ms, llm_ms, total_ms)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -55,14 +56,14 @@ class LogRepository:
             record.llm_ms,
             record.total_ms
         ))
-        conn.commit()
+        self.conn.commit()
         return cursor.lastrowid
 
-    def get_by_session(self, session_id: str, conn):
-        cur = conn.execute("SELECT * FROM logs WHERE session_id = ?", (session_id,))
+    def get_by_session(self, session_id: str):
+        cur = self.conn.execute("SELECT * FROM logs WHERE session_id = ?", (session_id,))
         return [LogRecord(**dict(row)) for row in cur.fetchall()]
 
-    def get_by_time_range(self, start: str, end: str, conn):
-        cur = conn.execute("SELECT * FROM logs WHERE timestamp BETWEEN ? AND ?", (start, end))
+    def get_by_time_range(self, start: str, end: str):
+        cur = self.conn.execute("SELECT * FROM logs WHERE timestamp BETWEEN ? AND ?", (start, end))
         return [LogRecord(**dict(row)) for row in cur.fetchall()]
         

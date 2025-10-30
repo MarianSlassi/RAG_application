@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import sqlite3
 
+from transformers import AutoTokenizer
+
 from src.qabot.indexer import Indexer
 from src.qabot.search import Retriever
 from src.qabot.llm.gateway import LLM, Route
@@ -11,7 +13,6 @@ from src.qabot.api.routers.ask import ask_router
 from src.qabot.api.routers.summarize import summarize_router
 from src.qabot.helpers.config import Config
 from src.qabot.helpers.project_config import load_project_config
-
 from src.qabot.repository.log_repository import LogRepository
 
 logger= get_custom_logger(log_file='main')
@@ -23,6 +24,9 @@ async def lifespan(app: FastAPI):
     app.state.retriever = Retriever(index=index,chunks=chunks,model=model)
     app.state.llm = LLM(route=Route.OPENROUTES)
     app.state.project_config = load_project_config()
+    app.state.tokenizer =  AutoTokenizer.from_pretrained(
+                "sentence-transformers/all-MiniLM-L6-v2"
+            )
     yield
 
 def create_app(lifespan) -> FastAPI:
