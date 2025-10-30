@@ -26,6 +26,7 @@ Since src/ and tests/ are neighboring subfolders, run tests from project root wi
 # Scripts
 `uv run python -m src.scripts.docs_2_chunks` - to chunk documents and save it with index
 `uv run -m src.scripts.eval` - to evaluate a model
+`uv run -m src.scripts.cli_logs session <session_id>` - get record of session_id from db or you can use `python -m src.scripts.cli_logs range <start> <end>`
 
 # Running LLM() class
 ## Routers

@@ -11,7 +11,7 @@ from src.qabot.ingest.loader import DocumentLoader
 from src.qabot.helpers.logger import get_custom_logger
 from src.qabot.helpers.project_config import load_project_config
 from src.qabot.helpers.logger import get_custom_logger
-from src.qabot.llm.prompts import LLM_JUDGE_SYSTEM, LLM_JUDGE_USER
+from src.qabot.llm.prompts import LLM_JUDGE_SYSTEM, LLM_JUDGE_USER, LLM_JUDGE_SCHEMA
 from src.qabot.llm.gateway import LLM
 
 from src.qabot.search import Retriever
@@ -35,7 +35,7 @@ class llm_evaluator():
         prompt_sources = [{"text": chunk.text, "path": chunk.meta.path} for chunk, i in retrieved]
         system_prompt = LLM_JUDGE_SYSTEM
         user_prompt  = LLM_JUDGE_USER.format(question = question, answer = answer, context = prompt_sources)
-        evaluation = self.llm.generate(user_prompt=user_prompt, system_prompt=system_prompt, structured= True)
+        evaluation = self.llm.generate(user_prompt=user_prompt, system_prompt=system_prompt, structured= True, schema = LLM_JUDGE_SCHEMA)
 
         
         faithfulness = float(evaluation['faithfulness'])
@@ -49,13 +49,6 @@ class llm_evaluator():
         logger.debug(f'\ntype(evaluation){type(evaluation)}')
 
         return faithfulness, relevance, completeness, consisness, overall_score, comments
-        
-
-
-
-    # сразу импелменитровать на структур аутпут
-    # ретривить контекст
-
 
 def merge_all_documents(config):
     output_file = config['all_documents_dump']
@@ -143,8 +136,6 @@ def evaluate(config, project_config, questions_num:int = 50):
         rr = reciprocal_rank(sources, golden_path)
         mrr_total += rr
 
-
-        
         logger.debug(f"For {n} question:\n")
         
         logger.debug(f"Current question Precision@1 = {precision_1:.2f}")
@@ -163,7 +154,6 @@ def evaluate(config, project_config, questions_num:int = 50):
         logger.debug(f"Current question retrieve_ms: {response.json()['timing']['retrieve_ms']}")
         logger.debug(f"Current question llm_ms: {response.json()['timing']['llm_ms']} ")
         logger.debug(f"Current question total_ms: {response.json()['timing']['total_ms']} \n")
-
 
     precision_at_1 /= test_frame_len
     recall_at_1 /= test_frame_len
@@ -184,7 +174,6 @@ def evaluate(config, project_config, questions_num:int = 50):
     llm_ms_overall      /= test_frame_len
     total_ms_overall    /= test_frame_len
 
-
     logger.info(f'Overal Precision@1 : {precision_at_1:.4f}')
     logger.info(f'Overal Recall@1 : {recall_at_1:.4f} ')
     logger.info(f'Overal Precision@3 : {precision_at_3:.4f}')
@@ -201,8 +190,6 @@ def evaluate(config, project_config, questions_num:int = 50):
     logger.info(f"Overall retrieve_ms : {retrieve_ms_overall:.1f}")
     logger.info(f"Overall llm_ms : {llm_ms_overall:.1f}")
     logger.info(f"Overall total_ms : {total_ms_overall:.1f}")
-
-
         
 def precision_recall_at_k(retrieved, golden_path, k):
     # if len(retrieved) < k:
@@ -227,9 +214,6 @@ def reciprocal_rank(retrieved, relevant):
             return 1 / idx
     return 0
 
-
-
-    
 if __name__ == '__main__':
    #merge_all_documents()
    config = Config()

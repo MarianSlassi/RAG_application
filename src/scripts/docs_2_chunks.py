@@ -3,7 +3,11 @@ from    src.qabot.helpers.config   import Config
 from    src.qabot.ingest.chunker   import Chunker
 from    src.qabot.indexer          import Indexer
 
+
 def main():
+    """
+    This script used to rebuild index
+    """
     config = Config()
     document_loader = DocumentLoader(config = config)
     files_paths = document_loader.find_files() 
