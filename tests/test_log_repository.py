@@ -1,58 +1,22 @@
-import os
-import sqlite3
-import datetime
-from src.qabot.repository.log_repository import LogRepository, Database
-from src.qabot.repository.models import LogRecord
-from src.qabot.helpers.config import Config
-
-def test_create_and_get_by_session(tmp_path):
-    os.makedirs("logs", exist_ok=True)
-    repo = LogRepository()
-    config = Config()
-    with Database._connect(config['logs_db']) as conn:
-        record = LogRecord(
-            id=None,
-            timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            session_id="abc123",
-            question="Q?",
-            answer="A!",
-            top_doc_paths=["/doc1", "/doc2"],
-            answer_length=2,
-            retrieve_ms=10,
-            llm_ms=20,
-            total_ms=30
-        )
-        repo.create(record, conn)
-        rows = repo.get_by_session("abc123", conn=conn)
-        assert len(rows) == 1
-
-
-
-
-# -----------------
 import json
-from datetime import datetime, timedelta
-
+import datetime
+from datetime import timedelta
 import pytest
-
 from src.qabot.repository.log_repository import LogRepository, Database
 from src.qabot.repository.models import LogRecord
 
-
-def _prepare_repo():
-    config = Config()
-    db_path = config['logs_dir'] / "test_logs.db"
+def _prepare_repo(tmp_path):
+    db_path = tmp_path / "test_logs.db"
     repo = LogRepository()
     return repo, db_path
 
-
 def test_create_and_get_by_session(tmp_path):
-    repo, db_path = _prepare_repo()
+    repo, db_path = _prepare_repo(tmp_path)
     with Database._connect(db_path) as conn:
         repo._ensure_schema(conn)
         record = LogRecord(
             id=None,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             session_id="session-42",
             question="Why is the sky blue?",
             answer="Because of Rayleigh scattering.",
@@ -76,7 +40,6 @@ def test_create_and_get_by_session(tmp_path):
     assert stored.top_doc_paths == json.dumps(record.top_doc_paths)
     assert stored.total_ms == record.total_ms
 
-
 def test_get_by_session_returns_empty_when_not_found(tmp_path):
     repo, db_path = _prepare_repo(tmp_path)
     with Database._connect(db_path) as conn:
@@ -85,10 +48,9 @@ def test_get_by_session_returns_empty_when_not_found(tmp_path):
 
     assert rows == []
 
-
 def test_get_by_time_range(tmp_path):
     repo, db_path = _prepare_repo(tmp_path)
-    now = datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
     earlier = (now - timedelta(minutes=5)).isoformat()
     later = (now + timedelta(minutes=5)).isoformat()
 
@@ -137,6 +99,6 @@ def test_get_by_time_range(tmp_path):
             conn,
         )
 
-    assert len(in_range) == 0  # только записи вне интервала
+    assert len(in_range) == 0
     assert len(all_rows) == 2
     assert {row.session_id for row in all_rows} == {"s1", "s2"}
