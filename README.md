@@ -23,9 +23,11 @@ Navigate to root/docs to get info about classes used in the project, the short l
 Since src/ and tests/ are neighboring subfolders, run tests from project root with:
 - `python -m pytest tests/test_loader.py`
 - `python -m pytest tests/test_chunker.py`
+- `python -m pytest tests/test_log_repository.py`
 # Scripts
-`uv run python -m src.scripts.docs_2_chunks` - to chunk documents and save it with index
-`uv run -m src.scripts.eval` - to evaluate a model
+- `uv run python -m src.scripts.docs_2_chunks` - to chunk documents and save it with index
+- `uv run -m src.scripts.eval` - to evaluate a model
+- `uv run -m src.scripts.cli_logs session <session_id>` - get record of session_id from db or you can use `python -m src.scripts.cli_logs range <start> <end>`
 
 # Running LLM() class
 ## Routers

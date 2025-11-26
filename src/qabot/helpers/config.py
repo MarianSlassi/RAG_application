@@ -61,7 +61,9 @@ class Config:
         
         self._config = {
             # Logs_07
-            'logs_dir':                   logs_dir, 
+            'logs_dir':                   logs_dir,
+            'logs_db':                    logs_dir / 'logs.db',
+            'test_logs_db':               logs_dir / 'test_logs.db',
             # Indexer
             'indexer_dir':                indexer_dir,
             'index_file':                 indexer_dir / 'index.faiss',

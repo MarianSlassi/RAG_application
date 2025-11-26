@@ -134,5 +134,32 @@ Retrieved Contexts:
 Model Answer:
 {answer}
 """
+
+LLM_JUDGE_SCHEMA = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "evaluation_schema",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "faithfulness": {"type": "number"},
+                "relevance": {"type": "number"},
+                "completeness": {"type": "number"},
+                "conciseness": {"type": "number"},
+                "overall_score": {"type": "number"},
+                "comments": {"type": "string"},
+            },
+            "required": [
+                "faithfulness",
+                "relevance",
+                "completeness",
+                "conciseness",
+                "overall_score",
+                "comments",
+            ],
+            "additionalProperties": False,
+        },
+    },
+}
 # Reference Answer (optional):
 # {reference}

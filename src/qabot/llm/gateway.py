@@ -59,7 +59,7 @@ class LLM:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
 
 
-    def generate(self, system_prompt, user_prompt, structured: bool = False ) -> (str | dict | None):
+    def generate(self, system_prompt, user_prompt, structured: bool = False, schema: dict | None = None ) -> (str | dict | None):
         """
         Generate an answer using the LLM.
 
@@ -73,7 +73,7 @@ class LLM:
         """
         
         if self.route is Route.OPENROUTES:
-            answer = self._generate_openai(system_prompt=system_prompt, user_prompt=user_prompt, structured=structured)
+            answer = self._generate_openai(system_prompt=system_prompt, user_prompt=user_prompt, structured=structured, schema=schema)
         elif self.route is Route.AWS:
             if structured:
                 raise ValueError("Using structured output isn't possible with AWS in current version")
@@ -83,7 +83,7 @@ class LLM:
         
 
         return answer
-    def _generate_openai(self, system_prompt, user_prompt, structured: bool = False):
+    def _generate_openai(self, system_prompt, user_prompt, structured: bool = False, schema: dict | None = None):
         """
         Depends on:
             Project Config variables:
@@ -102,9 +102,12 @@ class LLM:
             )
         if structured:
             kwargs["response_format"] = {"type": "json_object"}
+            if schema:
+                kwargs["response_format"] = schema
 
         completion = self.client.chat.completions.create(**kwargs)
         content = completion.choices[0].message.content
+        logger.debug(f'completion : \n {completion}\n')
         if structured:
             try:
                 return json.loads(content)

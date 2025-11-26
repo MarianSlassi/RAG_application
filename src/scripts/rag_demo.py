@@ -16,6 +16,9 @@ retriever = Retriever(index = index, chunks = chunks,  model = model)
 llm = LLM(route = Route.AWS)
 
 def ask_model(question:str, llm, retriever):
+    """
+    This script used to show the RAG POC version
+    """
     print('-'*20)
     sources = retriever.retrieve(question, k = 5)
     system_prompt = SYSTEM_PROMPT
