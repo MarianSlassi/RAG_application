@@ -68,6 +68,7 @@ class Config:
             'indexer_dir':                indexer_dir,
             'index_file':                 indexer_dir / 'index.faiss',
             'chunks_file':                indexer_dir / 'chunks.pkl',
+            'bm25_file':                  indexer_dir / 'bm25.pkl',
 
             # Validated_3
             'validated_dir':              validated_dir,

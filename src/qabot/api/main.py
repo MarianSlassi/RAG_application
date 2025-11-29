@@ -20,8 +20,8 @@ logger= get_custom_logger(log_file='main')
 async def lifespan(app: FastAPI):
     config = Config()
     indexer = Indexer()
-    index, chunks, model = indexer.load_index()
-    app.state.retriever = Retriever(index=index,chunks=chunks,model=model)
+    index, chunks, model, bm25, tokenized_corpus_bm25 = indexer.load_index()
+    app.state.retriever = Retriever(index = index, chunks = chunks,  model = model, index_bm25=bm25, tokenized_corpus_bm25=tokenized_corpus_bm25)
     app.state.llm = LLM(route=Route.OPENROUTES)
     app.state.project_config = load_project_config()
     app.state.tokenizer =  AutoTokenizer.from_pretrained(
