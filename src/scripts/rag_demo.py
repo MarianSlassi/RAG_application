@@ -9,11 +9,13 @@ from src.qabot import Indexer
 from src.qabot.search.retriever import Retriever
 from src.qabot.llm.gateway import LLM, Route
 from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
+from src.qabot.search.reranker import Reranker
 
 indexer = Indexer()
 index, chunks, model, bm25, tokenized_corpus_bm25 = indexer.load_index()
 retriever = Retriever(index=index, chunks=chunks,  model=model, index_bm25=bm25, tokenized_corpus_bm25=tokenized_corpus_bm25)
 llm = LLM(route = Route.OPENROUTES)
+reranker = Reranker()
 
 def ask_model(question:str, llm, retriever, k, bm_25:bool=False):
     """
@@ -23,8 +25,11 @@ def ask_model(question:str, llm, retriever, k, bm_25:bool=False):
     sources = retriever.retrieve(question, k=k, normalize=True)
     sources_bm25 = retriever.bm25_retrieve(question, k=k, normalize=True)
     hybrid_sources = retriever.hybrid_retrieve(question, k=k)
-    system_prompt = SYSTEM_PROMPT
+    
+    hybrid_chunks = [chunk for chunk, _ in hybrid_sources]
+    reranked_sources = reranker.rerank(query=question, chunks=hybrid_chunks, top_k=k)
 
+    system_prompt = SYSTEM_PROMPT
     if bm_25:
         context = [
         {"text": chunk.text, "path": chunk.meta.path}

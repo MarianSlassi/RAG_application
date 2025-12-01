@@ -25,6 +25,7 @@ Since src/ and tests/ are neighboring subfolders, run tests from project root wi
 - `python -m pytest tests/test_chunker.py`
 - `python -m pytest tests/test_log_repository.py`
 - `python -m pytest tests/test_hybrid_retriever.py`
+- `python -m pytest tests/test_reranker.py`
 # Scripts
 - `uv run python -m src.scripts.docs_2_chunks` - to chunk documents and save it with index
 - `uv run -m src.scripts.eval` - to evaluate a model
