@@ -12,27 +12,28 @@ from src.qabot.llm.prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 
 indexer = Indexer()
 index, chunks, model, bm25, tokenized_corpus_bm25 = indexer.load_index()
-retriever = Retriever(index = index, chunks = chunks,  model = model, index_bm25=bm25, tokenized_corpus_bm25=tokenized_corpus_bm25)
+retriever = Retriever(index=index, chunks=chunks,  model=model, index_bm25=bm25, tokenized_corpus_bm25=tokenized_corpus_bm25)
 llm = LLM(route = Route.OPENROUTES)
 
-def ask_model(question:str, llm, retriever, k, bm_25: bool=False):
+def ask_model(question:str, llm, retriever, k, bm_25:bool=False):
     """
     This script used to show the RAG POC version
     """
     print('-'*20)
-    sources = retriever.retrieve(question, k=k)
-    sources_bm25 = retriever.bm25_retrieve(question, k=k)
+    sources = retriever.retrieve(question, k=k, normalize=True)
+    sources_bm25 = retriever.bm25_retrieve(question, k=k, normalize=True)
+    hybrid_sources = retriever.hybrid_retrieve(question, k=k)
     system_prompt = SYSTEM_PROMPT
 
     if bm_25:
         context = [
         {"text": chunk.text, "path": chunk.meta.path}
-        for chunk, score in sources
+        for chunk, score in sources_bm25
         ]
     else:
         context = [
         {"text": chunk.text, "path": chunk.meta.path}
-        for chunk, score in sources_bm25
+        for chunk, score in sources
         ]
 
     user_prompt = USER_PROMPT_TEMPLATE.format(
@@ -49,4 +50,4 @@ def ask_model(question:str, llm, retriever, k, bm_25: bool=False):
     print('-----LLM answer-----\n', answer)
     print('-'*20)
 
-ask_model(question= 'How do i install a printer?', llm = llm, retriever=retriever, k =6,  bm_25= False)
+ask_model(question= 'How do i install a printer?', llm = llm, retriever=retriever, k=6,  bm_25= False)
