@@ -11,7 +11,8 @@ class Reranker:
         """
         Takes 'user' query, and a list of 'relevant'
         chunks and gives a list[tuple(Chunk, float)]
-        by the cross-encoder model 
+        by the cross-encoder model.
+        Returns top-k from the list of given chunks
         """
         pairs = [(query, chunk.text) for chunk in chunks]
         scores = self._model.compute_score(pairs, batch_size=self._batch_size)

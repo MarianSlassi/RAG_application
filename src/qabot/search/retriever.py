@@ -90,7 +90,7 @@ class Retriever:
         result = list(zip(top_k_documents, scores.tolist()))
         return result
     
-    def hybrid_retrieve(self, query: str, k: int = 5, w_bm25: float = 0.3, w_faiss: float = 0.7):
+    def hybrid_retrieve(self, query:str, k:int = 5, w_bm25:float = 0.3, w_faiss:float = 0.7) -> list[tuple[Chunk, float]]:
         '''
         Linear combination retrieving algorithm, using faiss and bm25 under the hood.
         '''
@@ -109,6 +109,4 @@ class Retriever:
 
         ranked = sorted(merged.values(), key=lambda x: x["hybrid"], reverse=True)
         return [(item["chunk"], item["hybrid"]) for item in ranked[:k]]
-    
-    
-
+ 

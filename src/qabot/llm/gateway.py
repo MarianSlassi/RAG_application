@@ -59,9 +59,9 @@ class LLM:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
 
 
-    def generate(self, system_prompt, user_prompt, structured: bool = False, schema: dict | None = None ) -> (str | dict | None):
+    def generate(self, system_prompt, user_prompt, structured: bool = False, schema: dict | None = None ) -> dict[str, Any]:
         """
-        Generate an answer using the LLM.
+        Generate an answer using the LLM. 
 
         Args:
             system_prompt (str): System-level instruction.
@@ -80,8 +80,6 @@ class LLM:
             answer = self._generate_aws(system_prompt=system_prompt, user_prompt=user_prompt)
         else:
             raise ValueError(f'Provide valid inference provider, possible: {[item.value for item in Route]}')
-        
-
         return answer
     def _generate_openai(self, system_prompt, user_prompt, structured: bool = False, schema: dict | None = None):
         """
@@ -152,6 +150,4 @@ class LLM:
             
         return response['output']['message']['content'][0]['text']
     # TODO: integrate retry as decorator also for Route.OPENROUTES - not integrated yet, cause clinet calling better to cope into independent class  
-
-
-
+    

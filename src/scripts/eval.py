@@ -12,7 +12,7 @@ from src.qabot.helpers.logger import get_custom_logger
 from src.qabot.helpers.project_config import load_project_config
 from src.qabot.helpers.logger import get_custom_logger
 from src.qabot.llm.prompts import LLM_JUDGE_SYSTEM, LLM_JUDGE_USER, LLM_JUDGE_SCHEMA
-from src.qabot.llm.gateway import LLM
+from src.qabot.llm.gateway import LLM, Route
 
 from src.qabot.search import Retriever
 from src.qabot.indexer import Indexer
@@ -26,9 +26,10 @@ class llm_evaluator():
     def __init__(self, project_config):
         self.project_config = project_config or load_project_config()
         indexer = Indexer()
-        index, chunks, model = indexer.load_index()
-        self.retriever = Retriever(index=index, chunks=chunks, model=model)
-        self.llm = LLM()
+        index, chunks, model, bm25, tokenized_corpus_bm25 = indexer.load_index()
+        self.retriever =  Retriever(index=index, chunks=chunks, model=model,
+                                     index_bm25=bm25, tokenized_corpus_bm25=tokenized_corpus_bm25)
+        self.llm = LLM(route=Route.OPENROUTES)
 
     def empirical_answer_evaluation(self, question, answer):
         retrieved = self.retriever.retrieve(query=question, k = self.project_config['retriever']['k'])
@@ -81,7 +82,7 @@ def evaluate(config, project_config, questions_num:int = 50):
     llm_eval = llm_evaluator(project_config = project_config)
     precision_at_1, recall_at_1, precision_at_3, recall_at_3, precision_at_5, recall_at_5 = (0,) * 6
     faithfulness_total, relevance_total, completeness_total, consisness_total, overall_score_total = (0,) * 5
-    retrieve_ms_overall, llm_ms_overall, total_ms_overall = (0,) * 3
+    retrieve_ms_overall, llm_ms_overall, total_ms_overall, rerank_ms_overall = (0,) * 4
     mrr_total = 0
     test_frame_len = questions.shape[0]
     retrieving_depth = project_config['retriever']['k']
@@ -104,8 +105,10 @@ def evaluate(config, project_config, questions_num:int = 50):
         answer = response.json()['answer']
 
         retrieve_ms_overall += response.json()['timing']['retrieve_ms']
+        rerank_ms_overall   += response.json()['timing']['rerank_ms']
         llm_ms_overall      += response.json()['timing']['llm_ms']
         total_ms_overall    += response.json()['timing']['total_ms']
+
         
         logger.debug(f'\n\n\n SOURCES FROM RESPONSE: \n\n\n{(sources)}' )
         logger.debug(f'\n\n\nGOLDEN PATH: {golden_path}')
@@ -152,6 +155,7 @@ def evaluate(config, project_config, questions_num:int = 50):
         logger.debug(f"Current question overall_score: {overall_score}")
 
         logger.debug(f"Current question retrieve_ms: {response.json()['timing']['retrieve_ms']}")
+        logger.debug(f"Current question rerank_ms: {response.json()['timing']['rerank_ms']}")
         logger.debug(f"Current question llm_ms: {response.json()['timing']['llm_ms']} ")
         logger.debug(f"Current question total_ms: {response.json()['timing']['total_ms']} \n")
 
@@ -171,6 +175,7 @@ def evaluate(config, project_config, questions_num:int = 50):
     mrr_total /= test_frame_len
 
     retrieve_ms_overall /= test_frame_len
+    rerank_ms_overall   /= test_frame_len
     llm_ms_overall      /= test_frame_len
     total_ms_overall    /= test_frame_len
 
@@ -188,6 +193,7 @@ def evaluate(config, project_config, questions_num:int = 50):
     logger.info(f"Overall overall_score : {overall_score_total:.2f}")
 
     logger.info(f"Overall retrieve_ms : {retrieve_ms_overall:.1f}")
+    logger.info(f"Overall rerank_ms : {rerank_ms_overall:.1f}")
     logger.info(f"Overall llm_ms : {llm_ms_overall:.1f}")
     logger.info(f"Overall total_ms : {total_ms_overall:.1f}")
         

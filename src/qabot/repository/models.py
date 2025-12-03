@@ -11,5 +11,6 @@ class LogRecord:
     top_doc_paths: List[str]
     answer_length: int
     retrieve_ms: int
+    rerank_ms: int
     llm_ms: int
     total_ms: int

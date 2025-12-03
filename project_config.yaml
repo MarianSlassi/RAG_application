@@ -27,6 +27,8 @@ llm:
 retriever:
   k: 15 # Retrieve k most similar vector from vector storage
         # For evaluation script for @1, @3, @5 metricas set at least 5
+reranker:
+  top_k: 10 # number of best candidates to retain after reranking
 
 web:
   frontend:
