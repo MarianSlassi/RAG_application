@@ -7,13 +7,14 @@ from src.qabot.repository.models import LogRecord
 
 def _prepare_repo(tmp_path):
     db_path = tmp_path / "test_logs.db"
-    repo = LogRepository()
+    with Database._connect(db_path) as conn:
+        repo = LogRepository(conn=conn)
     return repo, db_path
 
 def test_create_and_get_by_session(tmp_path):
     repo, db_path = _prepare_repo(tmp_path)
     with Database._connect(db_path) as conn:
-        repo._ensure_schema(conn)
+        repo._ensure_schema()
         record = LogRecord(
             id=None,
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -23,12 +24,12 @@ def test_create_and_get_by_session(tmp_path):
             top_doc_paths=["/docs/physics.md", "/docs/optics.md"],
             answer_length=2,
             retrieve_ms=25,
+            rerank_ms=98,
             llm_ms=110,
             total_ms=135,
         )
-
-        new_id = repo.create(record, conn)
-        rows = repo.get_by_session("session-42", conn)
+        new_id = repo.create(record)
+        rows = repo.get_by_session("session-42")
 
     assert new_id == 1
     assert len(rows) == 1
@@ -43,9 +44,8 @@ def test_create_and_get_by_session(tmp_path):
 def test_get_by_session_returns_empty_when_not_found(tmp_path):
     repo, db_path = _prepare_repo(tmp_path)
     with Database._connect(db_path) as conn:
-        repo._ensure_schema(conn)
-        rows = repo.get_by_session("missing-session", conn)
-
+        repo._ensure_schema()
+        rows = repo.get_by_session("missing-session")
     assert rows == []
 
 def test_get_by_time_range(tmp_path):
@@ -55,8 +55,7 @@ def test_get_by_time_range(tmp_path):
     later = (now + timedelta(minutes=5)).isoformat()
 
     with Database._connect(db_path) as conn:
-        repo._ensure_schema(conn)
-
+        repo._ensure_schema()
         repo.create(
             LogRecord(
                 id=None,
@@ -67,10 +66,10 @@ def test_get_by_time_range(tmp_path):
                 top_doc_paths=["/doc1"],
                 answer_length=1,
                 retrieve_ms=10,
+                rerank_ms=98,
                 llm_ms=20,
                 total_ms=30,
             ),
-            conn,
         )
         repo.create(
             LogRecord(
@@ -82,23 +81,19 @@ def test_get_by_time_range(tmp_path):
                 top_doc_paths=["/doc2"],
                 answer_length=1,
                 retrieve_ms=5,
+                rerank_ms=24,
                 llm_ms=10,
                 total_ms=15,
-            ),
-            conn,
+            )
         )
-
         in_range = repo.get_by_time_range(
             (now - timedelta(minutes=1)).isoformat(),
-            (now + timedelta(minutes=1)).isoformat(),
-            conn,
+            (now + timedelta(minutes=1)).isoformat()
         )
         all_rows = repo.get_by_time_range(
             (now - timedelta(hours=1)).isoformat(),
-            (now + timedelta(hours=1)).isoformat(),
-            conn,
+            (now + timedelta(hours=1)).isoformat()
         )
-
     assert len(in_range) == 0
     assert len(all_rows) == 2
     assert {row.session_id for row in all_rows} == {"s1", "s2"}

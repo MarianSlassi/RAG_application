@@ -19,4 +19,7 @@ def get_log_repo(request: Request):
     config = Config()
     with Database._connect(config['logs_db']) as conn:
         yield LogRepository(conn=conn)
+
+def get_reranker(request: Request):
+    return request.app.state.reranker
     

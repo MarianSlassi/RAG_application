@@ -8,3 +8,4 @@ test_md_files/
 .venv/
 *.pseudo-folders*
 *.pytest_cache
+test_files/

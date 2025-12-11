@@ -21,9 +21,11 @@ Navigate to root/docs to get info about classes used in the project, the short l
 - OPENAI_API_KEY - api key for calling opean ai model from OpenAI SDK
 # Tests
 Since src/ and tests/ are neighboring subfolders, run tests from project root with:
-- `python -m pytest tests/test_loader.py`
-- `python -m pytest tests/test_chunker.py`
-- `python -m pytest tests/test_log_repository.py`
+- `python -m pytest tests/unit/test_loader.py`
+- `python -m pytest tests/unit/test_chunker.py`
+- `python -m pytest tests/unit/test_log_repository.py`
+- `python -m pytest tests/unit/test_hybrid_retriever.py`
+- `python -m pytest tests/unit/test_reranker.py`
 # Scripts
 - `uv run python -m src.scripts.docs_2_chunks` - to chunk documents and save it with index
 - `uv run -m src.scripts.eval` - to evaluate a model

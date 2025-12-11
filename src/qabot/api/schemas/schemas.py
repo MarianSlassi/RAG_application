@@ -24,6 +24,7 @@ class Source(BaseModel):
     updated_at: date
 class Timing(BaseModel):
     retrieve_ms: int
+    rerank_ms: int
     llm_ms: int
     total_ms: int
 class AskResponse(BaseModel):
