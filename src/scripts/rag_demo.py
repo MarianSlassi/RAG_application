@@ -13,7 +13,7 @@ from src.qabot.search.reranker import Reranker
 
 indexer = Indexer()
 index, chunks, model, bm25, tokenized_corpus_bm25 = indexer.load_index()
-retriever = Retriever(index=index, chunks=chunks,  model=model, index_bm25=bm25, tokenized_corpus_bm25=tokenized_corpus_bm25)
+retriever = Retriever(index=index, chunks=chunks,  model=model, index_bm25=bm25)
 llm = LLM(route = Route.OPENROUTES)
 reranker = Reranker()
 

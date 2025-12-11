@@ -9,10 +9,8 @@ from src.qabot.api.dependencies.client import get_retriever, get_llm, get_log_re
 from src.qabot.api.schemas import Timing, AskResponse
 from src.qabot.api.responses import ask_responses
 from src.qabot.helpers.logger import get_custom_logger 
-from src.qabot.helpers.project_config import load_project_config
 
 from src.qabot.repository.models import LogRecord
-from src.qabot.repository.log_repository import LogRepository
 
 logger = get_custom_logger('ask/')
 

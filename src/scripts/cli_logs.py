@@ -18,14 +18,16 @@ def cli_logs():
 
     args = parser.parse_args()
     config = Config()
-    repo = LogRepository()
+    with Database._connect(config['logs_db']) as conn:
+        repo = LogRepository(conn=conn)
+        yield 
 
     with Database._connect(config['logs_db']) as conn:
         if args.command == "session":
-            for row in repo.get_by_session(args.session_id, conn=conn):
+            for row in repo.get_by_session(args.session_id):
                 print(row)
         elif args.command == "range":
-            for row in repo.get_by_time_range(args.start, args.end, conn=conn):
+            for row in repo.get_by_time_range(args.start, args.end):
                 print(row)
 
 if __name__ == '__main__':

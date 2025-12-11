@@ -132,7 +132,7 @@ class DocumentLoader():
 
         return Document(title=title, path=file, filetype=ext, updated_at=updated_at, text=file_content)
     
-    def load_files(self, files: list[str] = None) -> list[Document]:
+    def load_files(self, files: list[str] | None = None) -> list[Document]:
         """
         Uses _parse_file(file_path) method to assembley object of list[Document]\n
         Args:

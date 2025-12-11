@@ -12,7 +12,7 @@ nltk.download("stopwords", quiet=True)
 STOPWORDS = set(stopwords.words("english"))
 
 class Retriever:
-    def __init__(self, index: faiss.IndexFlatIP, chunks: list[Chunk], model: SentenceTransformer, index_bm25: BM25Okapi | None, tokenized_corpus_bm25):
+    def __init__(self, index:faiss.IndexFlatIP, chunks:list[Chunk], model:SentenceTransformer, index_bm25:BM25Okapi | None):
         """Class to retrieve data.
 
         Args:
@@ -27,9 +27,8 @@ class Retriever:
         self._chunks = chunks
         self._model = model
         self._index_bm25 = index_bm25
-        self._tokenized_corpus_bm25 = tokenized_corpus_bm25
     
-    def retrieve(self, query: str, k: int = 3, normalize: bool = False) -> list[tuple[Chunk, float]]:
+    def retrieve(self, query:str, k:int = 3, normalize:bool = False) -> list[tuple[Chunk,float]]:
         """
         Encodes the input query text using the embedding model, searches the cached or loaded FAISS index for the top k most similar chunks,
         and returns a list of tuples containing (chunk, similarity_score).
@@ -71,7 +70,7 @@ class Retriever:
             normalized = (scores - min_score) / denom
         return normalized
 
-    def bm25_retrieve(self, query:str, k:int=3, normalize: bool=False): # -> list[tuple[Chunk, float]] 
+    def bm25_retrieve(self, query:str, k:int=3, normalize:bool=False): # -> list[tuple[Chunk, float]] 
         """
         Tokenize the input query text using self._tokenize(), uses BM25Okapi object to make a search among documents inside of bm25 index 
         Returns normalized scores, usually the top one will have score 1.0 as a maximum and the nex is less, note how it differes from FAISS cos-similarity search scores
@@ -90,7 +89,7 @@ class Retriever:
         result = list(zip(top_k_documents, scores.tolist()))
         return result
     
-    def hybrid_retrieve(self, query:str, k:int = 5, w_bm25:float = 0.3, w_faiss:float = 0.7) -> list[tuple[Chunk, float]]:
+    def hybrid_retrieve(self, query:str, k:int=5, w_bm25:float=0.3, w_faiss:float=0.7) -> list[tuple[Chunk,float]]:
         '''
         Linear combination retrieving algorithm, using faiss and bm25 under the hood.
         '''

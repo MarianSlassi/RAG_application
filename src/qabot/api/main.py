@@ -23,13 +23,12 @@ async def lifespan(app: FastAPI):
     indexer = Indexer()
     index, chunks, model, bm25, tokenized_corpus_bm25 = indexer.load_index()
     app.state.retriever = Retriever(index=index, chunks=chunks, model=model,
-                                     index_bm25=bm25, tokenized_corpus_bm25=tokenized_corpus_bm25)
+                                     index_bm25=bm25)
     app.state.reranker = Reranker(model_name="BAAI/bge-reranker-base", use_fp16=True, device=None, batch_size=16)
     app.state.llm = LLM(route=Route.OPENROUTES)
     app.state.project_config = load_project_config()
     app.state.tokenizer =  AutoTokenizer.from_pretrained(
-                "sentence-transformers/all-MiniLM-L6-v2"
-            )
+                "sentence-transformers/all-MiniLM-L6-v2")
     yield
 
 def create_app(lifespan) -> FastAPI:

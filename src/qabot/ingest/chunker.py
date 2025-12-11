@@ -191,7 +191,7 @@ class Chunker:
         Notes:
             'section_title' field mocked with '' for future expansion. 
         """
-        self.context_window = max_tokens or self.tokenizer.model_max_length
+        self.context_window = max_tokens or self.tokenizer.model_max_length # we don't specify max_tokens parametr when calling current method cause we take max tokens context from model settings
         if min_tokens >= self.context_window:
             raise ValueError(f'min_tokens argument should be not grater or equal to the context window of tokenizer, current context_window: {self.context_window}')
         chunks_array = []

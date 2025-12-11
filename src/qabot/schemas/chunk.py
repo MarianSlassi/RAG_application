@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import date
+from typing import Optional
 
 class Meta(BaseModel):
     section_id: int = Field(..., ge=0, description="Section number, non-negative")
@@ -12,7 +13,7 @@ class Meta(BaseModel):
 class Chunk(BaseModel):
     id: str = Field(..., pattern=r"^[\w\-]+_\d+$", description="ID in format slug_section_subsection")
     text: str = Field(..., min_length=1, description="Chunk text")
-    meta: Meta
+    meta: Optional[Meta]
 
 # Naive Mocking template:
 # Chunk(
