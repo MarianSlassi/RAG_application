@@ -9,11 +9,11 @@ def main():
     This script used to rebuild index
     """
     config = Config()
-    document_loader = DocumentLoader(config = config)
+    document_loader = DocumentLoader(config=config)
     files_paths = document_loader.find_files() 
-    testing_on_all_files = document_loader.load_files(files = files_paths)
+    documents_records = document_loader.load_files(files=files_paths)
     chunker = Chunker()
-    chunks = chunker.documents_to_chunks(testing_on_all_files) 
+    chunks = chunker.documents_to_chunks(documents_records) 
     indexer = Indexer()
     indexer.build_index(chunks)
 

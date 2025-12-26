@@ -35,7 +35,7 @@ class DocumentRecord:
 class ChunkRecord:
     """Data model for document chunk records."""
     chunk_id: Optional[int]         # Assigned automatically by DB
-    doc_id: int                     # Foreign key → parent document
+    doc_id: Optional[int]           # Foreign key → parent document
     ordinal: int                    # Order of the chunk in the document (0, 1, 2, ...)
     content: str                    # Text content of the chunk
     tokens_count: int               # Token count in content

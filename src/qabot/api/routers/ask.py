@@ -68,7 +68,7 @@ def ask(payload: AskRequest, retriever=Depends(get_retriever), llm=Depends(get_l
     try:
         if project_config['web']['backend']['db_logging']: # If db logging enabled in project_config
             log_rec = LogRecord(
-                    id = None,
+                    id = None, # We assign None, cause the exact id will be assign by Database
                     timestamp = now_iso,
                     session_id = payload.session_id,
                     question = question,

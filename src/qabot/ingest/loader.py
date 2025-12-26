@@ -5,8 +5,13 @@ from PyPDF2 import PdfReader
 from docx import Document as DocxDocument
 
 from ..helpers import Config
-from ..schemas import Document
 
+from src.qabot.repository.models import DocumentRecord
+from src.qabot.repository.models import ChunkRecord
+
+import hashlib
+
+from pathlib import Path
 
 class DocumentLoader():
     """
@@ -30,7 +35,7 @@ class DocumentLoader():
         self.config = config or Config()
 
     
-    def find_files(self, path: str | None = None , allowed_ext: tuple = ('.md', '.pdf', '.docx')) -> list[str]:
+    def find_files(self, path: str | Path | None=None , allowed_ext: tuple=('.md', '.pdf', '.docx')) -> list[str]:
         """
         Returns strings of paths to all files inside of directory and all sub directories
         Args:
@@ -92,7 +97,7 @@ class DocumentLoader():
             with open(file, "r", encoding="utf-8") as f:
                 return f.read()
         
-    def _parse_file(self, file:str) -> Document:
+    def _parse_file(self, file:str) -> DocumentRecord:
         """
         Takes file path and produce Document with metadata\n
         Invokes self._extract_text() to get plain text from file, also extracts metadata (see "Returns")\n
@@ -110,10 +115,11 @@ class DocumentLoader():
                 "text": "…full plain text…"\n
                 }\n
         """
-        if os.path.isfile(file):
+        if os.path.isfile(file): # Extracting text
             file_content = self._extract_text(file)
-
-        _, ext = os.path.splitext(file)
+        content_hash = self._content_hash(file_content) # Getting text hash
+        size_bytes = os.path.getsize(file) # Getting bytes size of a file
+        _, ext = os.path.splitext(file) # getting full path to file with extension
         title = None
         updated_at = None
 
@@ -128,11 +134,19 @@ class DocumentLoader():
             title = os.path.splitext(os.path.basename(file))[0]
 
         if updated_at is None:
-            updated_at = datetime.fromtimestamp(os.path.getmtime(file)).date()
+            updated_at = datetime.fromtimestamp(os.path.getmtime(file))
 
-        return Document(title=title, path=file, filetype=ext, updated_at=updated_at, text=file_content)
+        return DocumentRecord(doc_id = None, source_type=ext, source_uri=file, size_bytes=size_bytes, content_hash=content_hash, title=title,  updated_at=updated_at, content=file_content)
     
-    def load_files(self, files: list[str] | None = None) -> list[Document]:
+    def _content_hash(self, text:str) -> str:
+        """
+        Uses SHA256 to encode input string. 
+        Returns:
+            str: in hexadecimal format
+        """
+        return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+    def load_files(self, files: list[str] | None = None) -> list[DocumentRecord]:
         """
         Uses _parse_file(file_path) method to assembley object of list[Document]\n
         Args:

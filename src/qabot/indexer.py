@@ -11,7 +11,7 @@ from nltk.corpus import stopwords
 from src.qabot.schemas import Chunk
 from sentence_transformers import SentenceTransformer
 from .helpers import Config
-
+from src.qabot.repository.models import ChunkRecord
 
 # ---
 
@@ -43,7 +43,7 @@ class Indexer():
         tokens = re.findall(r"\b\w+\b", text.lower())
         return [tok for tok in tokens if tok not in STOPWORDS]
 
-    def build_index(self, chunks: list[Chunk]) -> None:
+    def build_index(self, chunks: list[ChunkRecord]) -> None:
         """
         Encodes the provided text chunks using the SentenceTransformer model, builds a FAISS index from the embeddings,
         writes both the index and the chunks to disk at paths specified in the config, and caches them in memory for future queries.
@@ -51,7 +51,7 @@ class Indexer():
             chunks: list[str] - text chunks from which to build index
         UPD: added bm25 index builder
         """
-        chunks_text = [chunk.text for chunk in chunks] # Note that 'chunks' is a list of pydantic scheme objects
+        chunks_text = [chunk.content for chunk in chunks] # Note that 'chunks' is a list of pydantic scheme objects
 
         # BM25 index builder
         tokenized_corpus: list[list[str]] = [self._tokenize(text) for text in chunks_text]

@@ -5,24 +5,12 @@ from transformers import AutoTokenizer
 
 from ..schemas import Document, Chunk, Meta
 
+from src.qabot.repository.models import DocumentRecord
+from src.qabot.repository.models import ChunkRecord
+
 class Chunker:
     """
-    This class takes list[Document] produced by DocumentLoader class and convert them into list[Chunk], where Chunk schema which contains of id, text, and Meta schema.\n
-    
-    class Chunk(BaseModel):
-        id: str = Field(..., regex=r"^[\\w\\-]+_\\d+_$", description="ID in format slug_section_subsection")
-        text: str = Field(..., min_length=1, description="Chunk text")
-        meta: Meta
-
-    class Meta(BaseModel):
-        section_id: int = Field(..., ge=0, description="Section number, non-negative")
-        sub_section_id: int = Field(..., ge=0, description="Subsection number, non-negative")
-        section_title: str = Field("", max_length=200, description="Section title (can be empty)")
-        document_title: str = Field(..., min_length=1, max_length=300, description="Document title")
-        path: str = Field(..., regex=r"^data/.+\\.(pdf|md|docx)$", description="Path to file inside the data/ directory") # type: ignore # type: ignore
-        tokens: int = Field(..., ge=1, le=2048, description="Number of tokens in the chunk")
-
-
+    This class takes list[DocumentRecord] produced by DocumentLoader class and convert them into list[ChunkRecord], where Chunk schema which contains of id, text, and Meta schema.\n
     """
     def __init__(self, tokenizer = None, max_length = None):
         """
@@ -46,7 +34,7 @@ class Chunker:
             raise RuntimeError("Tokenizer is not defined. Please provide a tokenizer.")
         return len(self.tokenizer.encode(text))
     
-    def _split_text(self, document: Document) -> list[str]:
+    def _split_text(self, document: DocumentRecord) -> list[str]:
         """
         Splits the text of a single Document into smaller textual chunks based on section headings.
 
@@ -66,7 +54,7 @@ class Chunker:
         """
         chunks_list = []
         pattern = re.compile(r'\n+\*\*[^*\n]+\*\*\n+')
-        text = document.text
+        text = document.content
         chunks = pattern.split(text)
         for chunk in chunks:
             if chunk:
@@ -180,7 +168,7 @@ class Chunker:
         new_sequence = self._merge_short_text(sequences = new_sequence, min_tokens = min_tokens)
         return new_sequence
     
-    def documents_to_chunks(self, documents: list[Document], min_tokens:int = 150, max_tokens = None) -> list[Chunk]:
+    def documents_to_chunks(self, documents: list[DocumentRecord], min_tokens:int = 150, max_tokens = None) -> list[ChunkRecord]:
         """
         Takes list of Documents objects and iterate among them. For each\
         saves title and path fields. Then call self._split_text() method to split\
@@ -198,17 +186,16 @@ class Chunker:
         for doc in documents:
             document_title, path = None, None
             document_title = doc.title
-            path = doc.path
+            path = doc.source_uri
             updated_at = doc.updated_at
             splitted_document_text = self._split_text(document= doc)
             splitted_document_text = self._process_split_text(splitted_document_text, min_tokens=min_tokens)
+            doc_id = doc.doc_id
 
             for section_id , chunk in enumerate(splitted_document_text):     
                 id = document_title + '_' +  str(section_id)
                 tokens = self._count_tokens(chunk)
-
-                meta = Meta(document_title = document_title, path=path, section_id=section_id,tokens=tokens, section_title='',updated_at=updated_at)
-                chunk_object = Chunk(id = id, text = chunk, meta = meta)
+                chunk_object = ChunkRecord(chunk_id=None, doc_id=doc_id, ordinal=section_id, content=chunk, tokens_count=tokens )
                 chunks_array.append(chunk_object)
 
         return chunks_array
