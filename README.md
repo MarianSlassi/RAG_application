@@ -1,6 +1,6 @@
 # Project of Building basic RAG-app
 
-In this project we build simple chat-RAG </br>
+In this project we build simple chat-RAG the whole application code produced by not using any external framework, including chnking algorrithms </br>
 Data is taken from there: https://www.kaggle.com/datasets/dkhundley/synthetic-it-related-knowledge-items
 # Notes
  - Note that project has two configs, one for data and files path (Config class), and the second for all other project constants - project_config.yaml
