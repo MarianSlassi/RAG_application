@@ -1,0 +1,51 @@
+---
+llm:
+  retry_on_throttling: # every new try base_delay ** attempt
+    max_attempts: 5 
+    base_delay: 2 # seconds, be careful to assign 1
+  
+  openai:
+    client:
+      base_url: https://openrouter.ai/api/v1
+
+    model_settings:
+      model: gpt-4o-mini
+      max_tokens: 450
+      temperature: 0.25
+
+  aws:
+    client:
+      service_name: bedrock-runtime
+      region_name: eu-north-1
+
+    model_settings:
+      model_id: eu.anthropic.claude-3-7-sonnet-20250219-v1:0
+      max_tokens: 500
+      temperature: 0.2
+      
+
+retriever:
+  k: 15 # Retrieve k most similar vector from vector storage
+        # For evaluation script for @1, @3, @5 metricas set at least 5
+reranker:
+  top_k: 10 # number of best candidates to retain after reranking
+
+web:
+  frontend:
+    backend_host: http://127.0.0.1:8000 # To which backend host front calling - default uvicorn host:port 
+    max_buffer: 6 # The maximum length of stored messages in chat history
+    hold_after_summarization: 4 # How many last messages hold after summarization
+  backend:
+    db_logging: True  
+
+logger:
+  level: 
+    global: DEBUG # Filter before files and console level
+    files: INFO # or DEBUG
+    console: DEBUG
+
+
+# Scripts
+evals:
+  request_timeout: 180 # in seconds
+

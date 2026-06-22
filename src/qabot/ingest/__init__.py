@@ -1,1 +1,2 @@
-from loader import DocumentLoader
+from .loader import DocumentLoader
+from .chunker import Chunker

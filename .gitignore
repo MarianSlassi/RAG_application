@@ -1,3 +1,11 @@
 *.env
 data/
 *.DS_Store
+__pycache__/
+test.ipynb
+test_md_files/
+.index/
+.venv/
+*.pseudo-folders*
+*.pytest_cache
+test_files/
